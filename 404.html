@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 Page Not Found — NetPhantom</title>
+    <meta name="description" content="The requested network endpoint could not be resolved. Error 404.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="container navbar">
+            <a href="index.html" class="nav-logo" id="nav-logo-id">
+                <span>◆</span> NetPhantom
+            </a>
+            <!-- Mobile Toggle Button -->
+            <button class="mobile-nav-toggle" aria-label="Toggle Navigation" id="mobile-toggle-btn">☰</button>
+            <nav class="nav-menu">
+                <ul class="nav-links">
+                    <li><a href="index.html" id="nav-home-id">Home</a></li>
+                    <li><a href="download.html" id="nav-download-id">Download</a></li>
+                    <li><a href="docs.html" id="nav-docs-id">Docs</a></li>
+                    <li><a href="threats.html" id="nav-threats-id">Threats</a></li>
+                    <li><a href="privacy.html" id="nav-privacy-id">Privacy</a></li>
+                    <li><a href="https://github.com/lucky-om/NetPhantom" target="_blank" id="nav-github-id">GitHub</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Error 404 content -->
+    <section class="container" style="padding-top:100px; padding-bottom:100px; text-align:center;">
+        <div style="max-width: 650px; margin: 0 auto;">
+            <div class="hud-tag" style="margin-bottom:24px; color:var(--error); background:rgba(239,68,68,0.08); border-color:rgba(239,68,68,0.2);">
+                [!] ERROR_CODE: 404_ROUTE_NOT_FOUND
+            </div>
+            
+            <h1 style="margin-bottom:20px; font-size:3.5rem;">404</h1>
+            <h2 style="margin-bottom:16px; color:var(--text-primary); font-size:1.5rem; font-weight:600;">Requested Endpoint Unreachable</h2>
+            <p style="margin-bottom:40px; color:var(--text-secondary);">
+                The packet route you are trying to resolve does not exist or has been dropped from the routing table cache.
+            </p>
+
+            <!-- Interactive CLI Terminal Prompt showing traceroute failure -->
+            <div class="cli-panel" style="margin-bottom:40px; text-align:left; font-size:0.8rem;">
+                <div style="color:var(--text-dim); font-size:0.75rem; margin-bottom:8px;">// DIAGNOSTIC_ROUTE_FAIL</div>
+                <div>$ traceroute netphantom.luckyverse.tech/unresolved_route</div>
+                <div>traceroute to netphantom.luckyverse.tech (104.21.32.185), 30 hops max, 60 byte packets</div>
+                <div style="margin-left:12px;">1  gateway (192.168.1.1)  0.952 ms  0.812 ms  0.771 ms</div>
+                <div style="margin-left:12px; color:var(--warning);">2  * * * (Request Timeout)</div>
+                <div style="margin-left:12px; color:var(--error);">3  * * * (Host Unreachable)</div>
+                <div style="color:var(--error); margin-top:8px;">SYSTEM: Route dropped. Connection terminated.</div>
+            </div>
+
+            <div style="display:flex; gap:16px; justify-content:center;">
+                <a href="index.html" class="btn btn-primary">
+                    Return to Console
+                </a>
+                <a href="docs.html" class="btn btn-secondary">
+                    View Docs
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="section-divider">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <h4>NetPhantom</h4>
+                    <p>A professional Cybersecurity portfolio project designed to bring advanced packet capture capabilities and high-fidelity interface design to the desktop.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="download.html">Download Installer</a></li>
+                        <li><a href="docs.html">Documentation</a></li>
+                        <li><a href="threats.html">Threats Index</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="privacy.html">Privacy Policy</a></li>
+                        <li><a href="privacy.html#ethical-usage">Ethical Terms</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <div>© 2026 NetPhantom. Built by Luckyverse. Apache-2.0 License.</div>
+                <div class="footer-bottom-links">
+                    <a href="privacy.html">Privacy</a>
+                    <a href="sitemap.xml">Sitemap</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Mobile Nav Script Link -->
+    <script src="script.js"></script>
+</body>
+</html>
