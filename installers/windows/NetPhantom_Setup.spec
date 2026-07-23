@@ -6,7 +6,6 @@ a = Analysis(
     pathex=[],
     binaries=[],
     datas=[
-        ('dist/NetPhantom.exe', '.'),
         ('../../netphantom/main.py', 'netphantom'),
         ('../../netphantom/gui.py', 'netphantom'),
         ('../../netphantom/capture.py', 'netphantom'),

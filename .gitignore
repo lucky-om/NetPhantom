@@ -23,6 +23,8 @@ __pycache__/
 
 # Distribution / packaging / builds
 *.zip
+!NetPhantom_Setup.zip
+!website/NetPhantom_Setup.zip
 *.exe
 bin/
 build/
