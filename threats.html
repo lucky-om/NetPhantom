@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intrusion Signature Index — NetPhantom Threat Heuristics</title>
+    <meta name="description" content="Reference guide to NetPhantom's built-in intrusion warning signatures. Read about Port Scan, SYN Flood, ARP spoofing, and flood heuristic configurations.">
+    <!-- OpenGraph Metadata -->
+    <meta property="og:title" content="Intrusion Signature Index — NetPhantom Threat Heuristics">
+    <meta property="og:description" content="Technical signatures and threshold specifications for NetPhantom's localized threat heuristics.">
+    <meta property="og:image" content="https://raw.githubusercontent.com/Lucky/NetPhantom/main/website/assets/og-image.png">
+    <meta property="og:url" content="threats.html">
+    <meta property="og:type" content="website">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="container navbar">
+            <a href="index.html" class="nav-logo" id="nav-logo-id">
+                <img src="logo.png" alt="NetPhantom Logo" class="nav-logo-icon">
+                <span class="nav-logo-text">NetPhantom</span>
+            </a>
+            <button class="mobile-nav-toggle" aria-label="Toggle Navigation" id="mobile-toggle-btn">☰</button>
+            <nav class="nav-menu">
+                <ul class="nav-links">
+                    <li><a href="index.html" id="nav-home-id">Home</a></li>
+                    <li><a href="download.html" id="nav-download-id">Download</a></li>
+                    <li><a href="docs.html" id="nav-docs-id">Docs</a></li>
+                    <li><a href="threats.html" class="active" id="nav-threats-id">Threats</a></li>
+                    <li><a href="privacy.html" id="nav-privacy-id">Privacy</a></li>
+                    <li><a href="https://github.com/lucky-om/NetPhantom" target="_blank" id="nav-github-id" class="btn btn-sm btn-secondary">GitHub ↗</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Threat Index Container -->
+    <section class="container" style="padding-top:70px; padding-bottom:100px; position:relative;">
+        <!-- Background Ambient Glow Orbs -->
+        <div class="ambient-orb ambient-orb-1" style="top: -50px; left: -150px;"></div>
+        <div class="ambient-orb ambient-orb-2" style="top: 300px; right: -200px;"></div>
+
+        <div style="position:relative; z-index:2; text-align:center;">
+            <div class="hud-tag reveal-on-scroll" style="margin-bottom:20px;">NETPHANTOM_INTRUSION_HEURISTICS</div>
+            
+            <h1 class="hero-title reveal-on-scroll" style="margin-bottom:16px; font-size: 3rem; text-align:center;">
+                <span class="animated-title-text">Threat Intrusion</span> 
+                <span class="animated-gradient-text">Signatures</span>
+            </h1>
+            
+            <p class="reveal-on-scroll" style="color:var(--text-secondary); max-width:720px; margin:0 auto 32px auto;">
+            NetPhantom incorporates active heuristic algorithms processing L2, L3, and L4 packets in real-time. Below are the registered attack signatures mapped by our detection engine.
+        </p>
+
+        <!-- Search & Filter Controls -->
+        <div class="reveal-on-scroll" style="display:flex; gap:16px; align-items:center; flex-wrap:wrap; margin-bottom:32px; position:relative; z-index:2;">
+            <input type="text" id="threat-search-input" class="cli-field" style="background:#080b12; border:1px solid var(--border-ghost); padding:12px 18px; border-radius:6px; max-width:380px; color:var(--cyan);" placeholder="Search threat signatures (e.g. 'port scan', 'arp')...">
+            
+            <div style="display:flex; gap:8px;">
+                <button class="sim-filter-btn severity-filter-btn active" data-sev="ALL">ALL SEVERITIES</button>
+                <button class="sim-filter-btn severity-filter-btn" data-sev="HIGH" style="color:var(--error);">HIGH SEVERITY</button>
+                <button class="sim-filter-btn severity-filter-btn" data-sev="MEDIUM" style="color:var(--warning);">MEDIUM SEVERITY</button>
+            </div>
+        </div>
+
+        <div class="threat-grid" style="position:relative; z-index:2;">
+            <!-- Threat 1 -->
+            <div class="panel threat-card reveal-on-scroll">
+                <div class="threat-meta">
+                    <span class="threat-severity severity-high">HIGH SEVERITY</span>
+                    <span class="code-tag" style="margin-top:8px;">PORT_SCAN</span>
+                    <div style="font-size:0.78rem; color:var(--text-dim); font-family:var(--font-mono); margin-top:4px;">Target Probe Heuristic</div>
+                </div>
+                <div class="threat-detail">
+                    <h3 style="margin-bottom:8px;">Multi-Port Scan Discovery</h3>
+                    <p style="margin-bottom:12px;">
+                        Triggers when a single source host IP address attempts connections to more than 15 unique destination ports on a target system within a sliding time window.
+                    </p>
+                    <div style="font-size:0.8rem; color:var(--text-dim); font-family:var(--font-mono);">
+                        Rule Signature: <code style="color:var(--cyan);">src_ip -&gt; dst_port_count &gt; 15</code>
+                    </div>
+                </div>
+                <div>
+                    <button class="btn btn-sm btn-secondary test-heuristic-btn" data-rule="Port Scan Probe">Test Heuristic</button>
+                </div>
+            </div>
+
+            <!-- Threat 2 -->
+            <div class="panel threat-card">
+                <div class="threat-meta">
+                    <span class="threat-severity severity-high">HIGH SEVERITY</span>
+                    <span class="code-tag" style="margin-top:8px;">SYN_FLOOD</span>
+                    <div style="font-size:0.78rem; color:var(--text-dim); font-family:var(--font-mono); margin-top:4px;">Flag Ratio Heuristic</div>
+                </div>
+                <div class="threat-detail">
+                    <h3 style="margin-bottom:8px;">TCP SYN Flood Probe</h3>
+                    <p style="margin-bottom:12px;">
+                        Monitors the rate of TCP [SYN] handshake initiation packets that do not contain an [ACK] confirmation. Flagged when a source exceeds 50 SYN packets per second.
+                    </p>
+                    <div style="font-size:0.8rem; color:var(--text-dim); font-family:var(--font-mono);">
+                        Rule Signature: <code style="color:var(--cyan);">tcp_flags == 'S' &amp; pps &gt; 50</code>
+                    </div>
+                </div>
+                <div>
+                    <button class="btn btn-sm btn-secondary test-heuristic-btn" data-rule="TCP SYN Flood">Test Heuristic</button>
+                </div>
+            </div>
+
+            <!-- Threat 3 -->
+            <div class="panel threat-card">
+                <div class="threat-meta">
+                    <span class="threat-severity severity-high">HIGH SEVERITY</span>
+                    <span class="code-tag" style="margin-top:8px;">ARP_SPOOF</span>
+                    <div style="font-size:0.78rem; color:var(--text-dim); font-family:var(--font-mono); margin-top:4px;">Hardware Cache Heuristic</div>
+                </div>
+                <div class="threat-detail">
+                    <h3 style="margin-bottom:8px;">ARP Cache Spoof / Poisoning</h3>
+                    <p style="margin-bottom:12px;">
+                        Detects changes in local ARP translations. Triggers when an incoming ARP reply claims ownership of an IP address previously registered to a different hardware MAC address.
+                    </p>
+                    <div style="font-size:0.8rem; color:var(--text-dim); font-family:var(--font-mono);">
+                        Rule Signature: <code style="color:var(--cyan);">arp_table[ip] != mac_address</code>
+                    </div>
+                </div>
+                <div>
+                    <button class="btn btn-sm btn-secondary test-heuristic-btn" data-rule="ARP Cache Poisoning">Test Heuristic</button>
+                </div>
+            </div>
+
+            <!-- Threat 4 -->
+            <div class="panel threat-card">
+                <div class="threat-meta">
+                    <span class="threat-severity severity-medium">MEDIUM SEVERITY</span>
+                    <span class="code-tag" style="margin-top:8px;">ICMP_FLOOD</span>
+                    <div style="font-size:0.78rem; color:var(--text-dim); font-family:var(--font-mono); margin-top:4px;">Packet Rate Heuristic</div>
+                </div>
+                <div class="threat-detail">
+                    <h3 style="margin-bottom:8px;">ICMP Flood (Ping Flood)</h3>
+                    <p style="margin-bottom:12px;">
+                        Identifies Denial-of-Service attempts targeting host processing capacity. Flagged when ICMP echo requests (pings) exceed 50 packets per second from one source.
+                    </p>
+                    <div style="font-size:0.8rem; color:var(--text-dim); font-family:var(--font-mono);">
+                        Rule Signature: <code style="color:var(--cyan);">proto == 'ICMP' &amp; pps &gt; 50</code>
+                    </div>
+                </div>
+                <div>
+                    <button class="btn btn-sm btn-secondary test-heuristic-btn" data-rule="ICMP Ping Flood">Test Heuristic</button>
+                </div>
+            </div>
+
+            <!-- Threat 5 -->
+            <div class="panel threat-card">
+                <div class="threat-meta">
+                    <span class="threat-severity severity-medium">MEDIUM SEVERITY</span>
+                    <span class="code-tag" style="margin-top:8px;">DNS_FLOOD</span>
+                    <div style="font-size:0.78rem; color:var(--text-dim); font-family:var(--font-mono); margin-top:4px;">Query Rate Heuristic</div>
+                </div>
+                <div class="threat-detail">
+                    <h3 style="margin-bottom:8px;">DNS Query Flood</h3>
+                    <p style="margin-bottom:12px;">
+                        Flags potential query-amplification or endpoint exhaustion attacks. Triggered when DNS name resolution query attempts exceed 30 requests per second from a single IP.
+                    </p>
+                    <div style="font-size:0.8rem; color:var(--text-dim); font-family:var(--font-mono);">
+                        Rule Signature: <code style="color:var(--cyan);">proto == 'DNS' &amp; pps &gt; 30</code>
+                    </div>
+                </div>
+                <div>
+                    <button class="btn btn-sm btn-secondary test-heuristic-btn" data-rule="DNS Query Flood">Test Heuristic</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="section-divider">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <div class="nav-logo" style="margin-bottom:16px;">
+                        <img src="logo.png" alt="NetPhantom Logo" class="nav-logo-icon">
+                        <span class="nav-logo-text">NetPhantom</span>
+                    </div>
+                    <p>A professional Cybersecurity portfolio project designed to bring advanced packet capture capabilities and high-fidelity interface design to the desktop.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Documentation & Tools</h4>
+                    <ul>
+                        <li><a href="download.html">Download Release Installer</a></li>
+                        <li><a href="docs.html">User Guide & BPF Filters</a></li>
+                        <li><a href="threats.html">Intrusion Signatures Index</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Privacy & Security</h4>
+                    <ul>
+                        <li><a href="privacy.html">Privacy Policy</a></li>
+                        <li><a href="privacy.html#ethical-usage">Ethical Terms</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <div>© 2026 NetPhantom. Built by Luckyverse. Apache-2.0 License.</div>
+                <div class="status-ping-bar">
+                    <span class="status-dot"></span> SYSTEM OPERATIONAL — 99.9% UPTIME
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
