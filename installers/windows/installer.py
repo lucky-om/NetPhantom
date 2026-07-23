@@ -344,82 +344,19 @@ class SetupWizard:
             # Create installation directory
             os.makedirs(self.install_dir, exist_ok=True)
             self.progress["value"] = 15
-            self.lbl_status.config(text="Creating target folders...")
+            self.lbl_status.config(text="Creating target application folders...")
             self.root.update()
 
             base_path = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
-            src_exe = os.path.join(base_path, "NetPhantom.exe")
-            dest_exe = os.path.join(self.install_dir, "NetPhantom.exe")
-
-            # Check if embedded offline binary exists
-            if os.path.exists(src_exe):
-                self.progress["value"] = 35
-                self.lbl_status.config(text="Extracting NetPhantom.exe...")
-                self.root.update()
-                shutil.copy2(src_exe, dest_exe)
-            else:
-                # Web-installer mode: Download release package from GitHub
-                import urllib.request
-                import zipfile
-                import io
-
-                self.progress["value"] = 25
-                self.lbl_status.config(text="Connecting & downloading NetPhantom package...")
-                self.root.update()
-
-                download_urls = [
-                    "https://github.com/lucky-om/NetPhantom/releases/download/v3.0/NetPhantom_App.zip",
-                    "https://github.com/lucky-om/NetPhantom/archive/refs/heads/main.zip"
-                ]
-
-                downloaded = False
-                zip_path = os.path.join(self.install_dir, "netphantom_download.zip")
-
-                for url in download_urls:
-                    try:
-                        self.lbl_status.config(text=f"Downloading from {url[:45]}...")
-                        self.root.update()
-
-                        def _reporthook(count, block_size, total_size):
-                            if total_size > 0:
-                                percent = min(int(count * block_size * 40 / total_size), 40)
-                                self.progress["value"] = 25 + percent
-                                self.root.update()
-
-                        urllib.request.urlretrieve(url, zip_path, reporthook=_reporthook)
-                        downloaded = True
-                        break
-                    except Exception:
-                        continue
-
-                if downloaded and os.path.exists(zip_path):
-                    self.progress["value"] = 65
-                    self.lbl_status.config(text="Unpacking application files...")
-                    self.root.update()
-
-                    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                        zip_ref.extractall(self.install_dir)
-
-                    try:
-                        os.remove(zip_path)
-                    except Exception:
-                        pass
-                else:
-                    # Fallback if download failed and offline files exist locally
-                    local_root = os.path.abspath(os.path.join(base_path, "..", ".."))
-                    pkg_src = os.path.join(local_root, "netphantom")
-                    if os.path.exists(pkg_src):
-                        shutil.copytree(pkg_src, os.path.join(self.install_dir, "netphantom"), dirs_exist_ok=True)
-                    for f in ["setup.py", "requirements.txt"]:
-                        fpath = os.path.join(local_root, f)
-                        if os.path.exists(fpath):
-                            shutil.copy2(fpath, os.path.join(self.install_dir, f))
-
-            # Copy package source files if present locally
             pkg_dir = os.path.join(self.install_dir, "netphantom")
             os.makedirs(pkg_dir, exist_ok=True)
 
-            source_files = ["main.py", "gui.py", "capture.py", "analyzer.py", "errors.py"]
+            self.progress["value"] = 35
+            self.lbl_status.config(text="Extracting NetPhantom core modules...")
+            self.root.update()
+
+            # 1. Extract core python package files
+            source_files = ["__init__.py", "main.py", "gui.py", "capture.py", "analyzer.py", "errors.py"]
             for file_name in source_files:
                 src_file = os.path.join(base_path, "netphantom", file_name)
                 if not os.path.exists(src_file):
@@ -427,7 +364,29 @@ class SetupWizard:
                 if os.path.exists(src_file):
                     shutil.copy2(src_file, os.path.join(pkg_dir, file_name))
 
-            root_files = ["setup.py", "requirements.txt"]
+            # 2. Extract configuration & branding dependencies
+            root_files = ["setup.py", "requirements.txt", "logo.png"]
+            for file_name in root_files:
+                src_file = os.path.join(base_path, file_name)
+                if not os.path.exists(src_file):
+                    src_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", file_name)
+                if os.path.exists(src_file):
+                    shutil.copy2(src_file, os.path.join(self.install_dir, file_name))
+
+            # 3. Clean up any leftover website / HTML / repo files if present in install directory
+            unwanted_items = ["website", "docs.html", "index.html", "download.html", "privacy.html", "threats.html", "404.html", "style.css", "script.js", ".github", "CNAME", "sitemap.xml", "robots.txt"]
+            for item in unwanted_items:
+                target_path = os.path.join(self.install_dir, item)
+                if os.path.isfile(target_path):
+                    try:
+                        os.remove(target_path)
+                    except Exception:
+                        pass
+                elif os.path.isdir(target_path):
+                    try:
+                        shutil.rmtree(target_path, ignore_errors=True)
+                    except Exception:
+                        pass
             for file_name in root_files:
                 src_file = os.path.join(base_path, file_name)
                 if not os.path.exists(src_file):
