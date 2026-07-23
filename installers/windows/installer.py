@@ -87,9 +87,9 @@ class SetupWizard:
         sh = self.root.winfo_screenheight()
         self.root.geometry(f"560x420+{(sw-560)//2}+{(sh-420)//2}")
 
-        # Default Install Path
-        local_app_data = os.environ.get("LOCALAPPDATA", os.path.expanduser("~\\AppData\\Local"))
-        self.install_dir = os.path.join(local_app_data, "Programs", "NetPhantom")
+        # Default Install Path (Program Files for system driver access & AppLocker compliance)
+        pf = os.environ.get("ProgramFiles", "C:\\Program Files")
+        self.install_dir = os.path.join(pf, "NetPhantom")
 
         self.step = 1
         self._build_ui()
@@ -311,10 +311,20 @@ class SetupWizard:
         elif self.step == 5:
             # Finish action
             if self.run_app_var.get():
-                # Launch the app
+                # Launch the app with Administrator privileges (UAC prompt)
                 exe_path = os.path.join(self.install_dir, "NetPhantom.exe")
+                py_main = os.path.join(self.install_dir, "netphantom", "main.py")
+                target = exe_path if os.path.exists(exe_path) else py_main
+                
                 try:
-                    os.startfile(exe_path)
+                    import ctypes
+                    if os.name == 'nt':
+                        if target.endswith('.exe'):
+                            ctypes.windll.shell32.ShellExecuteW(None, "runas", target, None, self.install_dir, 1)
+                        else:
+                            ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, f'"{target}"', self.install_dir, 1)
+                    else:
+                        os.startfile(target)
                 except Exception as e:
                     messagebox.showerror("Error", f"Could not launch NetPhantom: {e}")
             self.root.destroy()
