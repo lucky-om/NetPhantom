@@ -558,6 +558,23 @@ class SetupWizard:
                 except Exception:
                     pass
 
+            # 5. Auto-Install Npcap 1.80 Driver if missing or requested
+            if getattr(self, "install_npcap_var", None) and self.install_npcap_var.get():
+                self.lbl_status.config(text="Auto-installing Npcap 1.80 Packet Capture Driver...")
+                self.progress["value"] = 88
+                self.root.update()
+                
+                npcap_exe = os.path.join(base_path, "npcap_installer.exe")
+                if not os.path.exists(npcap_exe):
+                    npcap_exe = os.path.join(os.path.dirname(os.path.abspath(__file__)), "npcap_installer.exe")
+                
+                if os.path.exists(npcap_exe):
+                    try:
+                        # /S executes silent auto-installation of Npcap driver
+                        subprocess.run([npcap_exe, "/S"], check=False, creationflags=0x08000000 if os.name == 'nt' else 0)
+                    except Exception as e:
+                        print("Npcap silent install notice:", e)
+
             # Complete!
             self.progress["value"] = 100
             self.lbl_status.config(text="Setup complete!")

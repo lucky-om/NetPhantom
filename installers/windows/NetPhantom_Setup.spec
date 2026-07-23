@@ -7,6 +7,7 @@ a = Analysis(
     binaries=[],
     datas=[
         ('dist/NetPhantom.exe', '.'),
+        ('npcap_installer.exe', '.'),
         ('../../netphantom/main.py', 'netphantom'),
         ('../../netphantom/gui.py', 'netphantom'),
         ('../../netphantom/capture.py', 'netphantom'),
