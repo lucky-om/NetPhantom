@@ -68,6 +68,18 @@ class SetupWizard:
         self.root = root
         self.root.title("NetPhantom v3.1.3 Setup")
         
+        # Auto-clear Windows Mark of the Web (Zone.Identifier) if present
+        if os.name == 'nt':
+            try:
+                import subprocess
+                _curr_exe = sys.executable
+                _motw_stream = f"{_curr_exe}:Zone.Identifier"
+                if os.path.exists(_motw_stream):
+                    os.remove(_motw_stream)
+                subprocess.run(["powershell", "-Command", "Unblock-File -Path '*' -ErrorAction SilentlyContinue"], creationflags=0x08000000)
+            except Exception:
+                pass
+
         # Set window icon from logo.png
         try:
             from PIL import Image, ImageTk
@@ -620,8 +632,32 @@ class SetupWizard:
             for ext in exts:
                 with winreg.CreateKey(winreg.HKEY_CURRENT_USER, rf"Software\Classes\{ext}") as ext_key:
                     winreg.SetValue(ext_key, "", winreg.REG_SZ, app_prog_id)
+
+            self._register_uninstall_entry()
         except Exception as e:
             print("File association registry notice:", e)
+
+    def _register_uninstall_entry(self):
+        if os.name != 'nt':
+            return
+        import winreg
+        uninst_key_path = r"Software\Microsoft\Windows\CurrentVersion\Uninstall\NetPhantom"
+        icon_path = os.path.join(self.install_dir, "logo.ico")
+        target_exe = os.path.join(self.install_dir, "NetPhantom.exe")
+
+        for root_hkey in [winreg.HKEY_CURRENT_USER, winreg.HKEY_LOCAL_MACHINE]:
+            try:
+                with winreg.CreateKey(root_hkey, uninst_key_path) as ukey:
+                    winreg.SetValueEx(ukey, "DisplayName", 0, winreg.REG_SZ, "NetPhantom Network Analyzer v3.1.3")
+                    winreg.SetValueEx(ukey, "Publisher", 0, winreg.REG_SZ, "Luckyverse Security")
+                    winreg.SetValueEx(ukey, "DisplayVersion", 0, winreg.REG_SZ, "3.1.3")
+                    winreg.SetValueEx(ukey, "DisplayIcon", 0, winreg.REG_SZ, icon_path if os.path.exists(icon_path) else target_exe)
+                    winreg.SetValueEx(ukey, "InstallLocation", 0, winreg.REG_SZ, self.install_dir)
+                    winreg.SetValueEx(ukey, "NoModify", 0, winreg.REG_DWORD, 1)
+                    winreg.SetValueEx(ukey, "NoRepair", 0, winreg.REG_DWORD, 1)
+                    winreg.SetValueEx(ukey, "Comments", 0, winreg.REG_SZ, "NetPhantom Professional Network Analyzer")
+            except Exception:
+                pass
 
     def _create_link(self, target, link_path, description):
         icon_file = os.path.join(self.install_dir, "logo.ico")

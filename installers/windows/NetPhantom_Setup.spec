@@ -50,4 +50,5 @@ exe = EXE(
     uac_admin=True,
     icon='../../logo.ico',
     version='version_info.txt',
+    manifest='app.manifest',
 )
