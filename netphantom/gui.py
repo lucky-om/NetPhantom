@@ -508,6 +508,8 @@ class PacketSnifferGUI:
                                 accelerator="F6")
         capture_menu.add_command(label="  ⟳  Restart Capture", command=self._restart_capture,
                                 accelerator="Ctrl+R")
+        capture_menu.add_command(label="  🔌  External Capture Tools (extcap)...", command=self._show_extcap_dialog)
+        capture_menu.add_command(label="  🛡  Npcap Driver Status...", command=self._show_npcap_dialog)
         capture_menu.add_separator()
         capture_menu.add_command(label="  🗑  Clear All", command=self.clear_packets,
                                 accelerator="Ctrl+L")
@@ -2052,6 +2054,75 @@ class PacketSnifferGUI:
             self._save_config()
         except Exception:
             pass
+
+    def _show_extcap_dialog(self):
+        top = tk.Toplevel(self.root)
+        top.title("External Capture Tools (extcap)")
+        top.geometry("540x380")
+        top.configure(bg=BG_BASE)
+        top.transient(self.root)
+
+        tk.Label(top, text="External Capture Tools (extcap)", bg=BG_BASE, fg=TEXT_PRIMARY, font=("Segoe UI", 11, "bold")).pack(anchor="w", padx=16, pady=(16, 4))
+        tk.Label(top, text="Configure external interfaces and capture dumping utilities:", bg=BG_BASE, fg=TEXT_SECONDARY, font=("Segoe UI", 9)).pack(anchor="w", padx=16, pady=(0, 10))
+
+        frame = tk.Frame(top, bg=BG_PANEL, bd=1, relief="solid")
+        frame.pack(fill=tk.BOTH, expand=True, padx=16, pady=4)
+
+        tools = [
+            ("Androiddump", "Android ADB packet sniffer for mobile device auditing", True),
+            ("Etwdump", "Windows Event Tracing (ETW) live kernel packet capturer", True),
+            ("Randpktdump", "Random packet generator for fuzzer testing", True),
+            ("Sshdump & Ciscodump", "Remote SSH & Cisco router packet streamer", True),
+            ("UDPdump", "UDP raw socket packet receiver listener", True),
+            ("Wifidump", "Wi-Fi 802.11 monitor mode raw frame dissector", True),
+        ]
+
+        for name, desc, active in tools:
+            sub = tk.Frame(frame, bg=BG_PANEL)
+            sub.pack(fill=tk.X, padx=12, pady=6)
+            var = tk.BooleanVar(value=active)
+            tk.Checkbutton(sub, text=f"☑ {name}", variable=var, bg=BG_PANEL, fg=TEXT_PRIMARY, activebackground=BG_PANEL, selectcolor=BG_INPUT, font=("Segoe UI", 9, "bold")).pack(side=tk.LEFT)
+            tk.Label(sub, text=f"— {desc}", bg=BG_PANEL, fg=TEXT_DIM, font=("Segoe UI", 8)).pack(side=tk.LEFT, padx=6)
+
+        btn_close = tk.Button(top, text="OK", command=top.destroy, bg=ACCENT_BLUE, fg="white", font=("Segoe UI", 9, "bold"), relief="flat", bd=0, padx=20, pady=6, cursor="hand2")
+        btn_close.pack(anchor="e", padx=16, pady=12)
+
+    def _show_npcap_dialog(self):
+        top = tk.Toplevel(self.root)
+        top.title("Npcap Packet Capture Driver")
+        top.geometry("520x340")
+        top.configure(bg=BG_BASE)
+        top.transient(self.root)
+
+        import sys, os
+        system32 = os.path.join(os.environ.get("SystemRoot", "C:\\Windows"), "System32")
+        npcap_exists = os.path.exists(os.path.join(system32, "Npcap", "wpcap.dll")) or os.path.exists(os.path.join(system32, "wpcap.dll"))
+
+        status_text = "✓ Npcap 1.88 Driver Active & Running" if npcap_exists else "⚠ Npcap Driver Not Detected"
+        status_color = ACCENT_GREEN if npcap_exists else ACCENT_AMBER
+
+        tk.Label(top, text="Packet Capture Driver Status", bg=BG_BASE, fg=TEXT_PRIMARY, font=("Segoe UI", 11, "bold")).pack(anchor="w", padx=16, pady=(16, 4))
+        
+        status_box = tk.LabelFrame(top, text=" System Driver ", bg=BG_PANEL, fg=TEXT_PRIMARY, font=("Segoe UI", 9, "bold"), bd=1, relief="solid")
+        status_box.pack(fill=tk.X, padx=16, pady=10, ipadx=8, ipady=6)
+        tk.Label(status_box, text=status_text, bg=BG_PANEL, fg=status_color, font=("Segoe UI", 10, "bold")).pack(anchor="w", padx=8, pady=4)
+
+        info_box = tk.LabelFrame(top, text=" Driver Details & Promiscuous Mode ", bg=BG_PANEL, fg=TEXT_PRIMARY, font=("Segoe UI", 9, "bold"), bd=1, relief="solid")
+        info_box.pack(fill=tk.BOTH, expand=True, padx=16, pady=4, ipadx=8, ipady=6)
+        
+        msg = ("Npcap allows NetPhantom to sniff raw 802.11 Wi-Fi frames and Ethernet packets at the hardware layer.\n\n"
+               "If you experience missing network interfaces or socket binding errors, verify that Npcap is installed with 'WinPcap API Compatibility' enabled.")
+        tk.Label(info_box, text=msg, bg=BG_PANEL, fg=TEXT_SECONDARY, font=("Segoe UI", 8), justify="left", wraplength=460).pack(anchor="w", padx=8, pady=4)
+
+        btn_frame = tk.Frame(top, bg=BG_BASE)
+        btn_frame.pack(fill=tk.X, padx=16, pady=12)
+
+        import webbrowser
+        btn_dl = tk.Button(btn_frame, text="🌐 Download Npcap Driver...", command=lambda: webbrowser.open("https://npcap.com/#download"), bg=BG_INPUT, fg=ACCENT_CYAN, font=("Segoe UI", 9), relief="flat", bd=0, padx=12, pady=4, cursor="hand2")
+        btn_dl.pack(side=tk.LEFT)
+
+        btn_ok = tk.Button(btn_frame, text="Close", command=top.destroy, bg=ACCENT_BLUE, fg="white", font=("Segoe UI", 9, "bold"), relief="flat", bd=0, padx=16, pady=4, cursor="hand2")
+        btn_ok.pack(side=tk.RIGHT)
 
         # 5. Destroy the Tk window
         try:

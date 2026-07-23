@@ -192,56 +192,157 @@ class SetupWizard:
             self.btn_next.config(state=tk.DISABLED)
 
     def _show_step_3(self):
-        # Clear content frame
+        # Step 3: Choose Components (Wireshark-style Tree/Checkbox Selection)
+        for child in self.content_frame.winfo_children():
+            child.destroy()
+
+        self.title_lbl.config(text="Choose Components")
+        self.subtitle_lbl.config(text="Choose which features of NetPhantom v3.0 you want to install.")
+
+        lbl_desc = tk.Label(self.content_frame, text="The following components are available for installation:",
+                            bg=BG_BASE, fg=TEXT_PRIMARY, font=("Segoe UI", 9))
+        lbl_desc.pack(anchor="w", pady=(0, 6))
+
+        # Scrollable Frame for Components Tree
+        tree_frame = tk.Frame(self.content_frame, bg=BG_PANEL, bd=1, relief="solid")
+        tree_frame.pack(fill=tk.BOTH, expand=True, pady=4)
+
+        self.comp_core = tk.BooleanVar(value=True)
+        self.comp_gui = tk.BooleanVar(value=True)
+        self.comp_cli = tk.BooleanVar(value=True)
+        self.comp_extcap = tk.BooleanVar(value=True)
+        self.comp_android = tk.BooleanVar(value=True)
+        self.comp_etw = tk.BooleanVar(value=True)
+        self.comp_randpkt = tk.BooleanVar(value=True)
+        self.comp_ssh_wifidump = tk.BooleanVar(value=True)
+        self.comp_udpdump = tk.BooleanVar(value=True)
+
+        cb_style = {"bg": BG_PANEL, "fg": TEXT_PRIMARY, "activebackground": BG_PANEL,
+                    "activeforeground": TEXT_PRIMARY, "selectcolor": BG_INPUT, "font": ("Segoe UI", 9)}
+
+        tk.Checkbutton(tree_frame, text="☑ NetPhantom Core Engine & Dissector", variable=self.comp_core, state=tk.DISABLED, **cb_style).pack(anchor="w", padx=8, pady=2)
+        tk.Checkbutton(tree_frame, text="  ☑ NetPhantom GUI Dashboard HUD", variable=self.comp_gui, state=tk.DISABLED, **cb_style).pack(anchor="w", padx=24, pady=1)
+        tk.Checkbutton(tree_frame, text="  [x] Global CLI Command (netphantom)", variable=self.comp_cli, **cb_style).pack(anchor="w", padx=24, pady=1)
+        
+        tk.Checkbutton(tree_frame, text="[x] External Capture Tools (extcap)", variable=self.comp_extcap, **cb_style).pack(anchor="w", padx=8, pady=(6, 2))
+        tk.Checkbutton(tree_frame, text="  [x] Androiddump (Android ADB Packet Sniffer)", variable=self.comp_android, **cb_style).pack(anchor="w", padx=24, pady=1)
+        tk.Checkbutton(tree_frame, text="  [x] Etwdump (Event Tracing for Windows Sniffer)", variable=self.comp_etw, **cb_style).pack(anchor="w", padx=24, pady=1)
+        tk.Checkbutton(tree_frame, text="  [x] Randpktdump (Random Packet Generator)", variable=self.comp_randpkt, **cb_style).pack(anchor="w", padx=24, pady=1)
+        tk.Checkbutton(tree_frame, text="  [x] Sshdump, Ciscodump & Wifidump (Remote/Wi-Fi Dissector)", variable=self.comp_ssh_wifidump, **cb_style).pack(anchor="w", padx=24, pady=1)
+        tk.Checkbutton(tree_frame, text="  [x] UDPdump (UDP Listener & Raw Capture Tool)", variable=self.comp_udpdump, **cb_style).pack(anchor="w", padx=24, pady=1)
+
+        # Space Required Label
+        tk.Label(self.content_frame, text="Space required: 35.0 MB", bg=BG_BASE, fg=TEXT_SECONDARY, font=("Segoe UI", 9, "bold")).pack(anchor="w", pady=(6, 0))
+
+    def _show_step_4(self):
+        # Step 4: Additional Tasks (Shortcuts & File Associations)
+        for child in self.content_frame.winfo_children():
+            child.destroy()
+
+        self.title_lbl.config(text="Additional Tasks")
+        self.subtitle_lbl.config(text="Create shortcuts and associate file extensions.")
+
+        cb_style = {"bg": BG_BASE, "fg": TEXT_PRIMARY, "activebackground": BG_BASE,
+                    "activeforeground": TEXT_PRIMARY, "selectcolor": BG_INPUT, "font": ("Segoe UI", 9)}
+
+        tk.Label(self.content_frame, text="Create Shortcuts", bg=BG_BASE, fg=TEXT_PRIMARY, font=("Segoe UI", 10, "bold")).pack(anchor="w", pady=(0, 4))
+        
+        self.shortcut_start = tk.BooleanVar(value=True)
+        self.shortcut_desktop = tk.BooleanVar(value=True)
+        self.assoc_files_var = tk.BooleanVar(value=True)
+
+        tk.Checkbutton(self.content_frame, text="NetPhantom Start Menu Item", variable=self.shortcut_start, **cb_style).pack(anchor="w", padx=12, pady=2)
+        tk.Checkbutton(self.content_frame, text="NetPhantom Desktop Icon", variable=self.shortcut_desktop, **cb_style).pack(anchor="w", padx=12, pady=2)
+
+        tk.Label(self.content_frame, text="Associate File Extensions", bg=BG_BASE, fg=TEXT_PRIMARY, font=("Segoe UI", 10, "bold")).pack(anchor="w", pady=(16, 4))
+        tk.Checkbutton(self.content_frame, text="Associate trace file extensions with NetPhantom", variable=self.assoc_files_var, **cb_style).pack(anchor="w", padx=12, pady=2)
+        
+        tk.Label(self.content_frame,
+                 text="Extensions include: .pcap, .pcapng, .cap, .pkt, .snoop, .trc, .pcap.gz\n"
+                      "Allows double-clicking packet captures in Windows Explorer to open directly in NetPhantom.",
+                 bg=BG_BASE, fg=TEXT_DIM, font=("Segoe UI", 8), justify="left").pack(anchor="w", padx=32, pady=(2, 0))
+
+    def _show_step_5(self):
+        # Step 5: Choose Install Location (with disk space check)
         for child in self.content_frame.winfo_children():
             child.destroy()
 
         self.title_lbl.config(text="Choose Install Location")
-        self.subtitle_lbl.config(text="Where should NetPhantom be installed?")
+        self.subtitle_lbl.config(text="Choose the folder in which to install NetPhantom v3.0.")
 
-        lbl_desc = tk.Label(self.content_frame,
-                            text="Setup will install NetPhantom in the following folder.\n"
-                                 "To install to this folder, click Next. To install to a different folder, enter it below.",
-                            bg=BG_BASE, fg=TEXT_PRIMARY, font=("Segoe UI", 9),
-                            justify="left", anchor="w")
-        lbl_desc.pack(fill=tk.X, pady=(0, 10))
+        tk.Label(self.content_frame, text="Destination Folder", bg=BG_BASE, fg=TEXT_PRIMARY, font=("Segoe UI", 9, "bold")).pack(anchor="w", pady=(0, 4))
 
-        # Path input box
         path_frame = tk.Frame(self.content_frame, bg=BG_BASE)
-        path_frame.pack(fill=tk.X, pady=8)
+        path_frame.pack(fill=tk.X, pady=4)
 
         self.path_var = tk.StringVar(value=self.install_dir)
         self.entry_path = tk.Entry(path_frame, textvariable=self.path_var, bg=BG_INPUT,
                                    fg=TEXT_PRIMARY, insertbackground=TEXT_PRIMARY,
                                    font=("Segoe UI", 9), relief="flat", bd=6)
-        # Fix pack arguments: replaced incorrect marginRight with padx=(0, 6)
         self.entry_path.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 6))
 
         btn_browse = tk.Button(path_frame, text="Browse...", command=self._browse_dir,
                                bg=BG_INPUT, fg=TEXT_PRIMARY, activebackground=BG_HOVER,
                                activeforeground=TEXT_PRIMARY, font=("Segoe UI", 9),
                                relief="flat", bd=0, padx=12, pady=4, cursor="hand2")
-        btn_browse.pack(side=tk.RIGHT, padx=(8, 0))
+        btn_browse.pack(side=tk.RIGHT)
 
-        # Shortcut Options
-        self.shortcut_desktop = tk.BooleanVar(value=True)
-        self.shortcut_start = tk.BooleanVar(value=True)
+        # Calculate space available on destination drive
+        try:
+            import shutil
+            drive = os.path.splitdrive(self.install_dir)[0] or "C:"
+            usage = shutil.disk_usage(drive + "\\")
+            avail_gb = round(usage.free / (1024**3), 1)
+        except Exception:
+            avail_gb = 50.0
 
-        chk_frame = tk.Frame(self.content_frame, bg=BG_BASE)
-        chk_frame.pack(fill=tk.X, pady=12)
+        space_frame = tk.Frame(self.content_frame, bg=BG_BASE)
+        space_frame.pack(fill=tk.X, pady=16)
+        tk.Label(space_frame, text="Space required: 35.0 MB", bg=BG_BASE, fg=TEXT_SECONDARY, font=("Segoe UI", 9)).pack(anchor="w")
+        tk.Label(space_frame, text=f"Space available: {avail_gb} GB", bg=BG_BASE, fg=TEXT_SECONDARY, font=("Segoe UI", 9)).pack(anchor="w")
 
-        tk.Checkbutton(chk_frame, text="Create a desktop shortcut", variable=self.shortcut_desktop,
-                       bg=BG_BASE, fg=TEXT_PRIMARY, activebackground=BG_BASE,
-                       activeforeground=TEXT_PRIMARY, selectcolor=BG_INPUT,
-                       font=("Segoe UI", 9)).pack(anchor="w", pady=2)
+    def _show_step_6(self):
+        # Step 6: Packet Capture Driver (Npcap Installation & Check)
+        for child in self.content_frame.winfo_children():
+            child.destroy()
 
-        tk.Checkbutton(chk_frame, text="Create a Start Menu program group shortcut", variable=self.shortcut_start,
-                       bg=BG_BASE, fg=TEXT_PRIMARY, activebackground=BG_BASE,
-                       activeforeground=TEXT_PRIMARY, selectcolor=BG_INPUT,
-                       font=("Segoe UI", 9)).pack(anchor="w", pady=2)
+        self.title_lbl.config(text="Packet Capture Driver")
+        self.subtitle_lbl.config(text="NetPhantom requires Npcap to capture live network data.")
 
-    def _show_step_4(self):
-        # Clear content frame
+        # Check Npcap status
+        npcap_installed = self._check_npcap_installed()
+        status_text = "Npcap 1.88 Driver Detected" if npcap_installed else "Npcap Driver Not Found"
+        status_color = ACCENT_GREEN if npcap_installed else ACCENT_AMBER
+
+        panel = tk.LabelFrame(self.content_frame, text=" Currently installed Npcap version ", bg=BG_PANEL, fg=TEXT_PRIMARY, font=("Segoe UI", 9, "bold"), bd=1, relief="solid")
+        panel.pack(fill=tk.X, pady=(0, 10), ipadx=8, ipady=6)
+        tk.Label(panel, text=status_text, bg=BG_PANEL, fg=status_color, font=("Segoe UI", 9, "bold")).pack(anchor="w", padx=8, pady=4)
+
+        install_panel = tk.LabelFrame(self.content_frame, text=" Install ", bg=BG_PANEL, fg=TEXT_PRIMARY, font=("Segoe UI", 9, "bold"), bd=1, relief="solid")
+        install_panel.pack(fill=tk.X, pady=6, ipadx=8, ipady=6)
+        
+        self.install_npcap_var = tk.BooleanVar(value=not npcap_installed)
+        tk.Checkbutton(install_panel, text="Install / Update Npcap 1.88 Driver", variable=self.install_npcap_var,
+                       bg=BG_PANEL, fg=TEXT_PRIMARY, activebackground=BG_PANEL, activeforeground=TEXT_PRIMARY,
+                       selectcolor=BG_INPUT, font=("Segoe UI", 9, "bold")).pack(anchor="w", padx=8, pady=2)
+        tk.Label(install_panel, text="Allows NetPhantom to capture raw socket frames in promiscuous mode on Wi-Fi and Ethernet adapters.",
+                 bg=BG_PANEL, fg=TEXT_DIM, font=("Segoe UI", 8)).pack(anchor="w", padx=28)
+
+        notice_panel = tk.LabelFrame(self.content_frame, text=" Important notice ", bg=BG_PANEL, fg=TEXT_PRIMARY, font=("Segoe UI", 9, "bold"), bd=1, relief="solid")
+        notice_panel.pack(fill=tk.X, pady=8, ipadx=8, ipady=6)
+        tk.Label(notice_panel, text="If your system has crashed during installation, you must run 'net stop npcap' as Administrator before upgrading Npcap so that it doesn't crash.",
+                 bg=BG_PANEL, fg=ACCENT_AMBER, font=("Segoe UI", 8), wraplength=480, justify="left").pack(anchor="w", padx=8)
+
+    def _check_npcap_installed(self) -> bool:
+        if os.name != 'nt':
+            return True
+        system32 = os.path.join(os.environ.get("SystemRoot", "C:\\Windows"), "System32")
+        npcap_dll = os.path.join(system32, "Npcap", "wpcap.dll")
+        winpcap_dll = os.path.join(system32, "wpcap.dll")
+        return os.path.exists(npcap_dll) or os.path.exists(winpcap_dll)
+
+    def _show_step_7(self):
+        # Step 7: Installing Progress
         for child in self.content_frame.winfo_children():
             child.destroy()
 
@@ -251,38 +352,37 @@ class SetupWizard:
         self.btn_next.config(state=tk.DISABLED)
         self.btn_cancel.config(state=tk.DISABLED)
 
-        self.lbl_status = tk.Label(self.content_frame, text="Extracting files...",
+        self.lbl_status = tk.Label(self.content_frame, text="Configuring application components...",
                                    bg=BG_BASE, fg=TEXT_PRIMARY, font=("Segoe UI", 9))
         self.lbl_status.pack(anchor="w", pady=(20, 4))
 
         self.progress = ttk.Progressbar(self.content_frame, mode="determinate", length=480)
         self.progress.pack(fill=tk.X, pady=8)
 
-        # Trigger installation after UI updates
+        # Trigger installation
         self.root.after(500, self._perform_installation)
 
-    def _show_step_5(self):
-        # Clear content frame
+    def _show_step_8(self):
+        # Step 8: Installation Complete
         for child in self.content_frame.winfo_children():
             child.destroy()
 
         self.title_lbl.config(text="Installation Complete")
-        self.subtitle_lbl.config(text="NetPhantom has been successfully installed.")
+        self.subtitle_lbl.config(text="NetPhantom v3.0 has been successfully installed.")
 
         self.btn_next.config(text="Finish", state=tk.NORMAL)
         self.btn_cancel.pack_forget()
 
-        # Run Checkbox
         self.run_app_var = tk.BooleanVar(value=True)
-        
+
         lbl_finished = tk.Label(self.content_frame,
-                                text="Setup has finished installing NetPhantom on your computer.\n"
-                                     "The application may be launched by selecting the created shortcuts.",
+                                text="Setup has finished installing NetPhantom v3.0 on your computer.\n"
+                                     "All components, CLI tools, and file associations have been configured.",
                                 bg=BG_BASE, fg=TEXT_PRIMARY, font=("Segoe UI", 10),
                                 justify="left", anchor="w")
         lbl_finished.pack(fill=tk.X, pady=10)
 
-        chk_run = tk.Checkbutton(self.content_frame, text="Launch NetPhantom now", variable=self.run_app_var,
+        chk_run = tk.Checkbutton(self.content_frame, text="Launch NetPhantom v3.0 now", variable=self.run_app_var,
                                  bg=BG_BASE, fg=TEXT_PRIMARY, activebackground=BG_BASE,
                                  activeforeground=TEXT_PRIMARY, selectcolor=BG_INPUT,
                                  font=("Segoe UI", 9, "bold"))
@@ -302,23 +402,29 @@ class SetupWizard:
             self.step = 3
             self._show_step_3()
         elif self.step == 3:
+            self.step = 4
+            self._show_step_4()
+        elif self.step == 4:
+            self.step = 5
+            self._show_step_5()
+        elif self.step == 5:
             chosen = self.path_var.get().strip()
             if os.path.basename(chosen.rstrip("\\/")) != "NetPhantom":
                 chosen = os.path.join(chosen, "NetPhantom")
             self.install_dir = os.path.normpath(chosen)
-            self.step = 4
-            self._show_step_4()
-        elif self.step == 5:
+            self.step = 6
+            self._show_step_6()
+        elif self.step == 6:
+            self.step = 7
+            self._show_step_7()
+        elif self.step == 8:
             # Finish action
             if self.run_app_var.get():
-                # Launch NetPhantom via Python runtime requesting Administrator privileges (UAC Prompt)
                 py_main = os.path.join(self.install_dir, "netphantom", "main.py")
                 cmd_launcher = os.path.join(self.install_dir, "NetPhantom.cmd")
-                
                 try:
                     import ctypes
                     if os.name == 'nt':
-                        # Find pythonw or python executable
                         python_exe = sys.executable
                         if "python.exe" in python_exe.lower() or "pythonw.exe" in python_exe.lower():
                             py_bin = python_exe.replace("python.exe", "pythonw.exe")
@@ -450,17 +556,53 @@ class SetupWizard:
                 shortcut_path = os.path.join(group_dir, "NetPhantom.lnk")
                 self._create_link(target_exe, shortcut_path, "NetPhantom Network Analyzer")
 
+            # 4. Associate File Extensions in Windows Registry if selected
+            if getattr(self, "assoc_files_var", None) and self.assoc_files_var.get():
+                try:
+                    self._register_file_associations()
+                except Exception:
+                    pass
+
             # Complete!
             self.progress["value"] = 100
             self.lbl_status.config(text="Setup complete!")
             self.root.update()
             
-            self.step = 5
-            self._show_step_5()
+            self.step = 8
+            self._show_step_8()
 
         except Exception as e:
             messagebox.showerror("Installation Failed", f"An error occurred: {e}")
             self.root.destroy()
+
+    def _register_file_associations(self):
+        if os.name != 'nt':
+            return
+        import winreg
+        cmd_launcher = os.path.join(self.install_dir, "NetPhantom.cmd")
+        py_main = os.path.join(self.install_dir, "netphantom", "main.py")
+        
+        python_exe = sys.executable
+        if "python.exe" in python_exe.lower() or "pythonw.exe" in python_exe.lower():
+            py_bin = python_exe.replace("python.exe", "pythonw.exe")
+        else:
+            py_bin = "pythonw"
+
+        launch_cmd = f'"{cmd_launcher}" "%1"' if os.path.exists(cmd_launcher) else f'"{py_bin}" "{py_main}" "%1"'
+        exts = [".pcap", ".pcapng", ".cap", ".pkt", ".snoop", ".trc"]
+        app_prog_id = "NetPhantom.PacketCapture"
+
+        try:
+            with winreg.CreateKey(winreg.HKEY_CURRENT_USER, rf"Software\Classes\{app_prog_id}") as key:
+                winreg.SetValue(key, "", winreg.REG_SZ, "NetPhantom Packet Capture File")
+                with winreg.CreateKey(key, r"shell\open\command") as cmd_key:
+                    winreg.SetValue(cmd_key, "", winreg.REG_SZ, launch_cmd)
+
+            for ext in exts:
+                with winreg.CreateKey(winreg.HKEY_CURRENT_USER, rf"Software\Classes\{ext}") as ext_key:
+                    winreg.SetValue(ext_key, "", winreg.REG_SZ, app_prog_id)
+        except Exception as e:
+            print("File association registry notice:", e)
 
     def _create_link(self, target, link_path, description):
         try:

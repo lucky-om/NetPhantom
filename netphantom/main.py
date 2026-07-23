@@ -34,17 +34,27 @@ def check_privileges() -> bool:
 
 
 def parse_arguments() -> argparse.Namespace:
+    # Handle direct double-click file arguments from Windows Explorer
+    if len(sys.argv) > 1 and not sys.argv[1].startswith("-"):
+        candidate = sys.argv[1].strip('"\'')
+        if any(candidate.lower().endswith(ext) for ext in [".pcap", ".pcapng", ".cap", ".pkt", ".snoop", ".trc"]):
+            return argparse.Namespace(list_interfaces=False, open=candidate)
+
     parser = argparse.ArgumentParser(
         prog="netphantom",
         description="NetPhantom v3.0 — Professional Network Packet Analyzer\n  Usage: netphantom",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
+    parser.add_argument("file_pos", nargs="?", default=None, help="PCAP file to open")
     parser.add_argument("--version", "-V", action="version", version="NetPhantom v3.0")
     parser.add_argument("--list-interfaces", "-l", action="store_true",
                         help="Print available network interfaces and exit")
     parser.add_argument("--open", "-o", type=str, default=None, metavar="FILE",
                         help="Open a .pcap file directly in the GUI")
-    return parser.parse_args()
+    args = parser.parse_args()
+    if not args.open and args.file_pos:
+        args.open = args.file_pos
+    return args
 
 
 def main():
