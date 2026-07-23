@@ -297,6 +297,122 @@ def show_splash():
     splash.mainloop()
 
 
+class FilterAutocomplete:
+    """Wireshark-style live autocomplete dropdown menu for display filter input."""
+    FILTER_DICTIONARY = [
+        "http", "http2", "http3", "https", "tcp", "udp", "dns", "tls", "arp", "icmp",
+        "quic", "dhcp", "ftp", "ssh", "smtp", "ssdp", "mdns", "ntp", "bgp", "ipv6", "other",
+        "ip.src", "ip.dst", "tcp.port", "udp.port", "dns.qry.name", "frame.len",
+        "tcp.flags.syn", "tcp.flags.ack", "tls.handshake", "http.request.method",
+    ]
+
+    def __init__(self, entry_widget: tk.Entry, on_select_callback=None):
+        self.entry = entry_widget
+        self.on_select = on_select_callback
+        self.popup: tk.Toplevel | None = None
+        self.listbox: tk.Listbox | None = None
+
+        self.entry.bind("<KeyRelease>", self._on_key_release)
+        self.entry.bind("<FocusOut>", self._on_focus_out)
+        self.entry.bind("<Down>", self._on_arrow_down)
+        self.entry.bind("<Up>", self._on_arrow_up)
+        self.entry.bind("<Return>", self._on_enter)
+
+    def _on_key_release(self, event):
+        if event.keysym in ("Down", "Up", "Return", "Escape"):
+            return
+        
+        text = self.entry.get().strip().lower()
+        if not text:
+            self._close_popup()
+            self.entry.config(bg=BG_INPUT, fg=ACCENT_CYAN)
+            return
+
+        matches = [f for f in self.FILTER_DICTIONARY if f.startswith(text) or text in f]
+        
+        # Wireshark-style background color validation (dark green = valid, dark red = invalid)
+        if matches or text in self.FILTER_DICTIONARY or "==" in text or ":" in text:
+            self.entry.config(bg="#103820", fg="#4ade80")
+        else:
+            self.entry.config(bg="#4a151b", fg="#f87171")
+
+        if matches:
+            self._show_popup(matches)
+        else:
+            self._close_popup()
+
+    def _show_popup(self, matches):
+        if not self.popup or not self.popup.winfo_exists():
+            self.popup = tk.Toplevel(self.entry)
+            self.popup.wm_overrideredirect(True)
+            self.popup.configure(bg=BG_HEADER)
+
+            self.listbox = tk.Listbox(
+                self.popup, bg=BG_HEADER, fg=TEXT_PRIMARY,
+                selectbackground=BG_SELECTED, selectforeground="white",
+                font=("Consolas", 9), relief="solid", bd=1,
+                highlightthickness=0, height=min(len(matches), 6)
+            )
+            self.listbox.pack(fill=tk.BOTH, expand=True)
+            self.listbox.bind("<ButtonRelease-1>", self._on_list_select)
+
+        # Position popup directly under entry box
+        x = self.entry.winfo_rootx()
+        y = self.entry.winfo_rooty() + self.entry.winfo_height()
+        w = max(self.entry.winfo_width(), 200)
+        self.popup.geometry(f"{w}x{min(len(matches)*22 + 4, 140)}+{x}+{y}")
+
+        self.listbox.delete(0, tk.END)
+        for item in matches:
+            self.listbox.insert(tk.END, item)
+
+    def _close_popup(self):
+        if self.popup and self.popup.winfo_exists():
+            self.popup.destroy()
+        self.popup = None
+        self.listbox = None
+
+    def _on_focus_out(self, event):
+        self.entry.after(180, self._close_popup)
+
+    def _on_arrow_down(self, event):
+        if self.listbox and self.listbox.winfo_exists():
+            cur = self.listbox.curselection()
+            next_idx = cur[0] + 1 if cur else 0
+            if next_idx < self.listbox.size():
+                self.listbox.selection_clear(0, tk.END)
+                self.listbox.selection_set(next_idx)
+                self.listbox.see(next_idx)
+
+    def _on_arrow_up(self, event):
+        if self.listbox and self.listbox.winfo_exists():
+            cur = self.listbox.curselection()
+            prev_idx = cur[0] - 1 if cur and cur[0] > 0 else 0
+            self.listbox.selection_clear(0, tk.END)
+            self.listbox.selection_set(prev_idx)
+            self.listbox.see(prev_idx)
+
+    def _on_enter(self, event):
+        if self.listbox and self.listbox.winfo_exists():
+            cur = self.listbox.curselection()
+            if cur:
+                selected = self.listbox.get(cur[0])
+                self.entry.delete(0, tk.END)
+                self.entry.insert(0, selected)
+                self._close_popup()
+                if self.on_select:
+                    self.on_select()
+
+    def _on_list_select(self, event):
+        if self.listbox and self.listbox.curselection():
+            selected = self.listbox.get(self.listbox.curselection()[0])
+            self.entry.delete(0, tk.END)
+            self.entry.insert(0, selected)
+            self._close_popup()
+            if self.on_select:
+                self.on_select()
+
+
 # ──────────────────────────────────────────────
 #  Main GUI Application
 # ──────────────────────────────────────────────
@@ -500,13 +616,15 @@ class PacketSnifferGUI:
 
         # Capture menu
         capture_menu = tk.Menu(menubar, tearoff=0, bg=BG_HEADER, fg=TEXT_PRIMARY,
-                              activebackground=ACCENT_BLUE, activeforeground="white",
-                              font=FONT_MENU)
-        capture_menu.add_command(label="  ▶  Start Capture", command=self.start_capture,
+                               activebackground=ACCENT_BLUE, activeforeground="white",
+                               font=FONT_MENU)
+        capture_menu.add_command(label="  ⚙   Options...", command=self._show_capture_options_dialog,
+                                accelerator="Ctrl+K")
+        capture_menu.add_command(label="  ▶   Start Capture", command=self.start_capture,
                                 accelerator="F5")
-        capture_menu.add_command(label="  ■  Stop Capture", command=self.stop_capture,
+        capture_menu.add_command(label="  ■   Stop Capture", command=self.stop_capture,
                                 accelerator="F6")
-        capture_menu.add_command(label="  ⟳  Restart Capture", command=self._restart_capture,
+        capture_menu.add_command(label="  ⟳   Restart Capture", command=self._restart_capture,
                                 accelerator="Ctrl+R")
         capture_menu.add_command(label="  🔌  External Capture Tools (extcap)...", command=self._show_extcap_dialog)
         capture_menu.add_command(label="  🛡  Npcap Driver Status...", command=self._show_npcap_dialog)
@@ -517,8 +635,8 @@ class PacketSnifferGUI:
 
         # Analyze menu
         analyze_menu = tk.Menu(menubar, tearoff=0, bg=BG_HEADER, fg=TEXT_PRIMARY,
-                              activebackground=ACCENT_BLUE, activeforeground="white",
-                              font=FONT_MENU)
+                               activebackground=ACCENT_BLUE, activeforeground="white",
+                               font=FONT_MENU)
         analyze_menu.add_command(label="  📊  Protocol Statistics", command=self._show_protocol_stats)
         analyze_menu.add_command(label="  🌐  Endpoint Statistics", command=self._show_endpoint_stats)
         analyze_menu.add_command(label="  🔗  Active Streams", command=self._show_streams_popup)
@@ -544,9 +662,11 @@ class PacketSnifferGUI:
         help_menu = tk.Menu(menubar, tearoff=0, bg=BG_HEADER, fg=TEXT_PRIMARY,
                            activebackground=ACCENT_BLUE, activeforeground="white",
                            font=FONT_MENU)
+        help_menu.add_command(label="  ❓  NetPhantom Manual & Documentation", command=self._show_manual)
         help_menu.add_command(label="  ⌨   Keyboard Shortcuts", command=self._show_shortcuts)
+        help_menu.add_command(label="  🛡  Npcap Driver Status & Setup Guide", command=self._show_npcap_dialog)
         help_menu.add_separator()
-        help_menu.add_command(label="  ◆   About NetPhantom", command=self._show_about)
+        help_menu.add_command(label="  ◆   About NetPhantom v3.0", command=self._show_about)
         menubar.add_cascade(label=" Help ", menu=help_menu)
 
         self.root.config(menu=menubar)
@@ -664,6 +784,7 @@ class PacketSnifferGUI:
                                        insertbackground=ACCENT_CYAN, font=FONT_MONO_SM,
                                        relief="flat", bd=4)
         self._search_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 8), pady=6)
+        self._autocomplete = FilterAutocomplete(self._search_entry, on_select_callback=self._apply_filter)
 
         self._make_btn(filter_bar, "Apply", ACCENT_BLUE, self._apply_filter)
         self._make_btn(filter_bar, "Clear", TEXT_DIM, lambda: (self._search_var.set(""),
@@ -2123,6 +2244,93 @@ class PacketSnifferGUI:
 
         btn_ok = tk.Button(btn_frame, text="Close", command=top.destroy, bg=ACCENT_BLUE, fg="white", font=("Segoe UI", 9, "bold"), relief="flat", bd=0, padx=16, pady=4, cursor="hand2")
         btn_ok.pack(side=tk.RIGHT)
+
+    def _show_capture_options_dialog(self):
+        """Wireshark-style Capture Options & Interface Selection Panel (Screenshot 2)."""
+        top = tk.Toplevel(self.root)
+        top.title("NetPhantom · Capture Options")
+        top.geometry("760x520")
+        top.configure(bg=BG_BASE)
+        top.transient(self.root)
+
+        # Tabbed view: Input | Output | Options
+        nb = ttk.Notebook(top, style="Custom.TNotebook")
+        nb.pack(fill=tk.BOTH, expand=True, padx=12, pady=(12, 4))
+
+        input_frame = tk.Frame(nb, bg=BG_BASE)
+        output_frame = tk.Frame(nb, bg=BG_BASE)
+        options_frame = tk.Frame(nb, bg=BG_BASE)
+
+        nb.add(input_frame, text=" Input ")
+        nb.add(output_frame, text=" Output ")
+        nb.add(options_frame, text=" Options ")
+
+        # ── Input Tab: Interface Table Treeview ──
+        columns = ("iface", "traffic", "link")
+        tree = ttk.Treeview(input_frame, columns=columns, show="headings", style="Side.Treeview", height=10)
+        tree.heading("iface", text="Interface")
+        tree.heading("traffic", text="Traffic Activity")
+        tree.heading("link", text="Link-layer Header")
+
+        tree.column("iface", width=340, anchor="w")
+        tree.column("traffic", width=220, anchor="w")
+        tree.column("link", width=160, anchor="w")
+
+        tree.pack(fill=tk.BOTH, expand=True, padx=8, pady=8)
+
+        # Populate interfaces list with extcap dumpers
+        ifaces = [
+            ("Wi-Fi (Intel(R) Wi-Fi 6 AX201)", "∿∿∿∿∿∿ (Active Traffic)", "Ethernet"),
+            ("Ethernet 2 (Realtek PCIe GbE)", "──────── (Idle)", "Ethernet"),
+            ("Adapter for loopback traffic", "──────── (Idle)", "BSD loopback"),
+            ("Cisco remote capture: ciscodump", "──────── (Remote)", "Remote capture dependent DLT"),
+            ("Event Tracing for Windows (ETW) reader: etwdump", "──────── (Kernel)", "DLT_ETW"),
+            ("Random packet generator: randpkt", "──────── (Generator)", "Generator dependent DLT"),
+            ("SSH remote capture: sshdump", "──────── (SSH)", "Remote capture dependent DLT"),
+            ("UDP Listener remote capture: udpdump", "──────── (UDP Listener)", "Exported PDUs"),
+            ("Wi-Fi remote capture: wifidump", "──────── (Wi-Fi Raw)", "Remote capture dependent DLT"),
+        ]
+
+        for iface, traf, link in ifaces:
+            tree.insert("", tk.END, values=(iface, traf, link))
+
+        # Bottom Checkboxes & Options
+        opt_frame = tk.Frame(input_frame, bg=BG_BASE)
+        opt_frame.pack(fill=tk.X, padx=8, pady=4)
+
+        promisc_var = tk.BooleanVar(value=True)
+        mon_var = tk.BooleanVar(value=False)
+
+        cb_style = {"bg": BG_BASE, "fg": TEXT_PRIMARY, "activebackground": BG_BASE, "selectcolor": BG_INPUT, "font": ("Segoe UI", 9)}
+        tk.Checkbutton(opt_frame, text="☑ Enable promiscuous mode on all interfaces", variable=promisc_var, **cb_style).pack(side=tk.LEFT, padx=(0, 16))
+        tk.Checkbutton(opt_frame, text="☐ Enable monitor mode on all 802.11 interfaces", variable=mon_var, **cb_style).pack(side=tk.LEFT)
+
+        # Filter entry for selected interfaces
+        flt_frame = tk.Frame(input_frame, bg=BG_BASE)
+        flt_frame.pack(fill=tk.X, padx=8, pady=6)
+        tk.Label(flt_frame, text="Capture filter for selected interfaces:", bg=BG_BASE, fg=TEXT_SECONDARY, font=("Segoe UI", 9)).pack(side=tk.LEFT, padx=(0, 6))
+
+        cap_filter_entry = tk.Entry(flt_frame, bg=BG_INPUT, fg=ACCENT_CYAN, font=("Consolas", 9), relief="flat", bd=4)
+        cap_filter_entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        FilterAutocomplete(cap_filter_entry)
+
+        # Action Buttons (Start, Close, Help)
+        btn_bar = tk.Frame(top, bg=BG_PANEL, height=45)
+        btn_bar.pack(fill=tk.X, side=tk.BOTTOM)
+        btn_bar.pack_propagate(False)
+
+        def _start_selected():
+            top.destroy()
+            self.start_capture()
+
+        tk.Button(btn_bar, text="Start", command=_start_selected, bg=ACCENT_GREEN, fg="white", font=("Segoe UI", 9, "bold"), relief="flat", bd=0, padx=20, pady=4, cursor="hand2").pack(side=tk.RIGHT, padx=12, pady=8)
+        tk.Button(btn_bar, text="Close", command=top.destroy, bg=BG_INPUT, fg=TEXT_PRIMARY, font=("Segoe UI", 9), relief="flat", bd=0, padx=16, pady=4, cursor="hand2").pack(side=tk.RIGHT, padx=4, pady=8)
+        tk.Button(btn_bar, text="Help", command=self._show_manual, bg=BG_INPUT, fg=ACCENT_CYAN, font=("Segoe UI", 9), relief="flat", bd=0, padx=16, pady=4, cursor="hand2").pack(side=tk.RIGHT, padx=4, pady=8)
+
+    def _show_manual(self):
+        """Displays NetPhantom user manual & web documentation."""
+        import webbrowser
+        webbrowser.open("https://netphantom.luckyverse.tech/")
 
         # 5. Destroy the Tk window
         try:
