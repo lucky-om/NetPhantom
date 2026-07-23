@@ -470,8 +470,8 @@ class SetupWizard:
                 if os.path.exists(src_file):
                     shutil.copy2(src_file, os.path.join(pkg_dir, file_name))
 
-            # 2. Extract configuration & branding dependencies
-            root_files = ["setup.py", "requirements.txt", "logo.png"]
+            # 2. Extract configuration, binary & branding dependencies
+            root_files = ["NetPhantom.exe", "setup.py", "requirements.txt", "logo.png", "logo.ico"]
             for file_name in root_files:
                 src_file = os.path.join(base_path, file_name)
                 if not os.path.exists(src_file):
@@ -493,12 +493,6 @@ class SetupWizard:
                         shutil.rmtree(target_path, ignore_errors=True)
                     except Exception:
                         pass
-            for file_name in root_files:
-                src_file = os.path.join(base_path, file_name)
-                if not os.path.exists(src_file):
-                    src_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", file_name)
-                if os.path.exists(src_file):
-                    shutil.copy2(src_file, os.path.join(self.install_dir, file_name))
 
             # Auto-Install requirements and CLI command via pip if Python exists
             self.progress["value"] = 75
@@ -533,16 +527,17 @@ class SetupWizard:
                     except Exception:
                         pass
 
-            # Create Launcher CMD File (Executes Python with Admin privileges, exempt from AppLocker EXE policies)
+            # Create Launcher CMD File fallback
             cmd_launcher = os.path.join(self.install_dir, "NetPhantom.cmd")
             try:
                 with open(cmd_launcher, "w", encoding="utf-8") as f:
                     f.write('@echo off\n')
-                    f.write(f'start "" pythonw "%~dp0netphantom\\main.py"\n')
+                    f.write(f'start "" "%~dp0NetPhantom.exe"\n')
             except Exception:
                 pass
 
-            target_exe = cmd_launcher if os.path.exists(cmd_launcher) else (dest_exe if os.path.exists(dest_exe) else os.path.join(self.install_dir, "netphantom", "main.py"))
+            dest_exe = os.path.join(self.install_dir, "NetPhantom.exe")
+            target_exe = dest_exe if os.path.exists(dest_exe) else (cmd_launcher if os.path.exists(cmd_launcher) else os.path.join(self.install_dir, "netphantom", "main.py"))
 
             if self.shortcut_desktop.get():
                 desktop_path = winshell.desktop()
@@ -605,20 +600,26 @@ class SetupWizard:
             print("File association registry notice:", e)
 
     def _create_link(self, target, link_path, description):
+        icon_file = os.path.join(self.install_dir, "logo.ico")
+        if not os.path.exists(icon_file):
+            icon_file = os.path.join(self.install_dir, "logo.png")
         try:
             shell = Dispatch('WScript.Shell')
             shortcut = shell.CreateShortCut(link_path)
             shortcut.Targetpath = target
             shortcut.WorkingDirectory = os.path.dirname(target)
             shortcut.Description = description
+            if os.path.exists(icon_file):
+                shortcut.IconLocation = f"{icon_file},0"
+            elif os.path.exists(target) and target.endswith(".exe"):
+                shortcut.IconLocation = f"{target},0"
             shortcut.save()
-        except Exception as e:
-            # Fallback using winshell
+        except Exception:
             try:
                 winshell.CreateShortcut(
                     Path=link_path,
                     Target=target,
-                    Icon=(target, 0),
+                    Icon=(icon_file if os.path.exists(icon_file) else target, 0),
                     Description=description
                 )
             except Exception:

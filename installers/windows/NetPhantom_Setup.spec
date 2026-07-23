@@ -6,6 +6,7 @@ a = Analysis(
     pathex=[],
     binaries=[],
     datas=[
+        ('dist/NetPhantom.exe', '.'),
         ('../../netphantom/main.py', 'netphantom'),
         ('../../netphantom/gui.py', 'netphantom'),
         ('../../netphantom/capture.py', 'netphantom'),
@@ -13,7 +14,8 @@ a = Analysis(
         ('../../netphantom/errors.py', 'netphantom'),
         ('../../setup.py', '.'),
         ('../../requirements.txt', '.'),
-        ('../../logo.png', '.')
+        ('../../logo.png', '.'),
+        ('../../logo.ico', '.')
     ],
     hiddenimports=[],
     hookspath=[],
@@ -45,4 +47,6 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     uac_admin=True,
+    icon='../../logo.ico',
+    version='version_info.txt',
 )

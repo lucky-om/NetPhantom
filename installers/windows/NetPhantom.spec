@@ -36,4 +36,6 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     uac_admin=True,
+    icon='../../logo.ico',
+    version='version_info.txt',
 )
