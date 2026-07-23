@@ -99,6 +99,12 @@ def show_splash():
     import math
     import random
 
+    try:
+        import ctypes
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("luckyverse.netphantom.app.v3")
+    except Exception:
+        pass
+
     splash = tk.Tk()
     splash.overrideredirect(True)
     splash.configure(bg=BG_BASE)
@@ -106,6 +112,18 @@ def show_splash():
     sw, sh = splash.winfo_screenwidth(), splash.winfo_screenheight()
     splash.geometry(f"{w}x{h}+{(sw-w)//2}+{(sh-h)//2}")
     splash.attributes("-alpha", 0.0)
+
+    # Set window icon on splash
+    _logo_path = _find_logo_path()
+    if _logo_path:
+        try:
+            from PIL import Image, ImageTk
+            _icon_img = Image.open(_logo_path).resize((64, 64), Image.LANCZOS)
+            _icon_photo = ImageTk.PhotoImage(_icon_img)
+            splash.iconphoto(True, _icon_photo)
+            splash._icon_ref = _icon_photo
+        except Exception:
+            pass
 
     # ── Animated canvas background (particle grid)
     bg_canvas = tk.Canvas(splash, width=w, height=h, bg=BG_BASE,
@@ -649,95 +667,6 @@ class PacketSnifferGUI:
         self._make_btn(filter_bar, "Clear", TEXT_DIM, lambda: (self._search_var.set(""),
                                                                 self._filter_proto_var.set("ALL"),
                                                                 self._apply_filter()))
-
-        # ── Scrollable Protocol Selector Row ─────────────
-        badge_bar = tk.Frame(self.root, bg=BG_BASE, height=36)
-        badge_bar.pack(fill=tk.X, side=tk.TOP)
-        badge_bar.pack_propagate(False)
-
-        tk.Label(badge_bar, text=" Protocol Selector:", bg=BG_BASE, fg=ACCENT_CYAN,
-                 font=("Segoe UI", 9, "bold")).pack(side=tk.LEFT, padx=(8, 6))
-
-        # Scrollbar to scroll and select protocols
-        badge_hsb = ttk.Scrollbar(badge_bar, orient="horizontal", style="Custom.Horizontal.TScrollbar")
-        badge_hsb.pack(side=tk.RIGHT, fill=tk.Y, padx=(2, 8), pady=4)
-
-        # Canvas container for scrolling protocol badges
-        badge_canvas = tk.Canvas(badge_bar, bg=BG_BASE, bd=0, highlightthickness=0,
-                                 xscrollcommand=badge_hsb.set, height=28)
-        badge_canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, pady=3)
-        badge_hsb.config(command=badge_canvas.xview)
-
-        badge_inner = tk.Frame(badge_canvas, bg=BG_BASE)
-        badge_canvas.create_window((0, 0), window=badge_inner, anchor="nw")
-
-        def _on_badge_inner_configure(event):
-            badge_canvas.configure(scrollregion=badge_canvas.bbox("all"))
-
-        badge_inner.bind("<Configure>", _on_badge_inner_configure)
-
-        def _on_canvas_scroll(event):
-            if event.delta:
-                badge_canvas.xview_scroll(int(-1 * (event.delta / 120)), "units")
-            elif event.num == 4:
-                badge_canvas.xview_scroll(-1, "units")
-            elif event.num == 5:
-                badge_canvas.xview_scroll(1, "units")
-
-        badge_canvas.bind("<MouseWheel>", _on_canvas_scroll)
-        badge_canvas.bind("<Shift-MouseWheel>", _on_canvas_scroll)
-        badge_canvas.bind("<Button-4>", _on_canvas_scroll)
-        badge_canvas.bind("<Button-5>", _on_canvas_scroll)
-        badge_inner.bind("<MouseWheel>", _on_canvas_scroll)
-        badge_inner.bind("<Shift-MouseWheel>", _on_canvas_scroll)
-        badge_inner.bind("<Button-4>", _on_canvas_scroll)
-        badge_inner.bind("<Button-5>", _on_canvas_scroll)
-
-        badge_protos = [
-            ("ALL",             TEXT_SECONDARY),
-            ("TCP",             ACCENT_GREEN),
-            ("UDP",             ACCENT_BLUE),
-            ("DNS",             ACCENT_CYAN),
-            ("HTTP",            ACCENT_ORANGE),
-            ("HTTPS",           ACCENT_TEAL),
-            ("TLS",             ACCENT_PINK),
-            ("TLS ClientHello", ACCENT_PINK),
-            ("TLS ServerHello", ACCENT_PINK),
-            ("QUIC",            ACCENT_TEAL),
-            ("ICMP",            ACCENT_AMBER),
-            ("ARP",             ACCENT_PURPLE),
-            ("IPv6",            TEXT_SECONDARY),
-            ("DHCP",            ACCENT_LIME),
-            ("FTP",             ACCENT_AMBER),
-            ("SSH",             ACCENT_BLUE),
-            ("SMTP",            ACCENT_ORANGE),
-            ("SSDP",            ACCENT_CYAN),
-            ("MDNS",            ACCENT_PURPLE),
-            ("NTP",             ACCENT_GREEN),
-            ("BGP",             ACCENT_RED),
-            ("OTHER",           TEXT_DIM),
-        ]
-        self._badge_btns: dict[str, tk.Button] = {}
-        for proto, color in badge_protos:
-            btn = tk.Button(
-                badge_inner, text=proto,
-                bg=BG_PANEL, fg=color,
-                activebackground=BG_SELECTED, activeforeground=color,
-                font=("Segoe UI", 8, "bold"), relief="flat",
-                bd=0, padx=8, pady=2, cursor="hand2",
-                command=lambda p=proto: self._quick_filter(p),
-            )
-            btn.pack(side=tk.LEFT, padx=2, pady=1)
-            btn.bind("<Enter>", lambda e, b=btn, c=color: (b.config(bg=BG_SELECTED) if self._filter_proto_var.get() != b.cget("text") else None))
-            btn.bind("<Leave>", lambda e, b=btn, c=color: (b.config(bg=BG_PANEL) if self._filter_proto_var.get() != b.cget("text") else None))
-            btn.bind("<MouseWheel>", _on_canvas_scroll)
-            btn.bind("<Shift-MouseWheel>", _on_canvas_scroll)
-            btn.bind("<Button-4>", _on_canvas_scroll)
-            btn.bind("<Button-5>", _on_canvas_scroll)
-            self._badge_btns[proto] = btn
-
-        # Highlight ALL as active initially
-        self._badge_btns["ALL"].config(bg=BG_SELECTED)
 
     # ── Packet Table ──────────────────────────
     def _build_packet_table(self, parent):

@@ -216,17 +216,57 @@ class CaptureEngine:
                 self.error_callback(err.message)
             return False
 
+def resolve_scapy_interface(iface_input):
+    """
+    Safely resolve a human-readable interface string (e.g. 'Wi-Fi') or GUID
+    to a valid Scapy NetworkInterface object or device name string.
+    """
+    if not iface_input:
+        return conf.iface
+
+    try:
+        from scapy.all import conf, IFACES
+        # 1. Exact match in IFACES (by devname, name, or description)
+        for key, iface_obj in IFACES.items():
+            if str(key) == str(iface_input):
+                return iface_obj
+            name = getattr(iface_obj, "name", "")
+            desc = getattr(iface_obj, "description", "")
+            dev = getattr(iface_obj, "devname", "")
+            if iface_input in (name, desc, dev):
+                return iface_obj
+
+        # 2. Case-insensitive / substring match
+        target_lower = str(iface_input).lower()
+        for key, iface_obj in IFACES.items():
+            name = getattr(iface_obj, "name", "").lower()
+            desc = getattr(iface_obj, "description", "").lower()
+            if target_lower in name or target_lower in desc or name in target_lower:
+                return iface_obj
+
+        # 3. Scapy dev_from_name
+        try:
+            return conf.ifaces.dev_from_name(str(iface_input))
+        except Exception:
+            pass
+    except Exception as e:
+        logger.warning(f"Interface resolution warning: {e}")
+
+    return iface_input or conf.iface
+
+
     # ─────────────────────────────────────────
     #  Internal Loop
     # ─────────────────────────────────────────
     def _capture_loop(self):
         """Run Scapy sniff() in a loop until stop is signalled."""
         bpf = self.bpf_filter if self.bpf_filter else None
+        target_iface = resolve_scapy_interface(self.interface)
 
         while not self._stop_event.is_set():
             try:
                 sniff(
-                    iface=self.interface,
+                    iface=target_iface,
                     filter=bpf,
                     prn=self._packet_callback,
                     store=False,
