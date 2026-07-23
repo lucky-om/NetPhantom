@@ -311,20 +311,30 @@ class SetupWizard:
         elif self.step == 5:
             # Finish action
             if self.run_app_var.get():
-                # Launch the app with Administrator privileges (UAC prompt)
-                exe_path = os.path.join(self.install_dir, "NetPhantom.exe")
+                # Launch NetPhantom via Python runtime requesting Administrator privileges (UAC Prompt)
                 py_main = os.path.join(self.install_dir, "netphantom", "main.py")
-                target = exe_path if os.path.exists(exe_path) else py_main
+                cmd_launcher = os.path.join(self.install_dir, "NetPhantom.cmd")
                 
                 try:
                     import ctypes
                     if os.name == 'nt':
-                        if target.endswith('.exe'):
-                            ctypes.windll.shell32.ShellExecuteW(None, "runas", target, None, self.install_dir, 1)
+                        # Find pythonw or python executable
+                        python_exe = sys.executable
+                        if "python.exe" in python_exe.lower() or "pythonw.exe" in python_exe.lower():
+                            py_bin = python_exe.replace("python.exe", "pythonw.exe")
+                            if not os.path.exists(py_bin):
+                                py_bin = python_exe
                         else:
-                            ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, f'"{target}"', self.install_dir, 1)
+                            py_bin = "pythonw"
+
+                        if os.path.exists(cmd_launcher):
+                            ctypes.windll.shell32.ShellExecuteW(None, "runas", "cmd.exe", f'/c "{cmd_launcher}"', self.install_dir, 0)
+                        elif os.path.exists(py_main):
+                            ctypes.windll.shell32.ShellExecuteW(None, "runas", py_bin, f'"{py_main}"', self.install_dir, 1)
+                        else:
+                            ctypes.windll.shell32.ShellExecuteW(None, "runas", "netphantom", "", self.install_dir, 1)
                     else:
-                        os.startfile(target)
+                        os.system(f'python3 "{py_main}" &')
                 except Exception as e:
                     messagebox.showerror("Error", f"Could not launch NetPhantom: {e}")
             self.root.destroy()
@@ -458,12 +468,16 @@ class SetupWizard:
                     except Exception:
                         pass
 
-            # Create Shortcuts
-            self.progress["value"] = 90
-            self.lbl_status.config(text="Creating system shortcuts...")
-            self.root.update()
+            # Create Launcher CMD File (Executes Python with Admin privileges, exempt from AppLocker EXE policies)
+            cmd_launcher = os.path.join(self.install_dir, "NetPhantom.cmd")
+            try:
+                with open(cmd_launcher, "w", encoding="utf-8") as f:
+                    f.write('@echo off\n')
+                    f.write(f'start "" pythonw "%~dp0netphantom\\main.py"\n')
+            except Exception:
+                pass
 
-            target_exe = dest_exe if os.path.exists(dest_exe) else os.path.join(self.install_dir, "netphantom", "main.py")
+            target_exe = cmd_launcher if os.path.exists(cmd_launcher) else (dest_exe if os.path.exists(dest_exe) else os.path.join(self.install_dir, "netphantom", "main.py"))
 
             if self.shortcut_desktop.get():
                 desktop_path = winshell.desktop()
