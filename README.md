@@ -1,4 +1,4 @@
-# ◆ NetPhantom v3.0 — Professional Network Packet Analyzer
+# ◆ NetPhantom v3.1.3 — Professional Network Packet Analyzer
 
 ---
 
@@ -9,7 +9,7 @@
   ██║╚██╗██║██╔══╝     ██║       ██╔═══╝ ██╔══██║██╔══██║██║╚██╗██║   ██║   ██║   ██║██║╚██╔╝██║
   ██║ ╚████║███████╗   ██║       ██║     ██║  ██║██║  ██║██║ ╚████║   ██║   ╚██████╔╝██║ ╚═╝ ██║
   ╚═╝  ╚═══╝╚══════╝   ╚═╝       ╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═╝    ╚═════╝ ╚═╝     ╚═╝
-                                                          NetPhantom v3.0
+                                                          NetPhantom v3.1.3
 ```
 
 **A Wireshark-inspired network packet sniffer & analyzer built with Python, Scapy, and Tkinter.**
@@ -112,7 +112,7 @@ netphantom --version
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│ ◆ NetPhantom v3.0   [File│Capture│Analyze│View│Help]         │
+│ ◆ NetPhantom v3.1.3   [File│Capture│Analyze│View│Help]         │
 ├──────────────────────────────────────────────────────────────┤
 │ [Interface ▼] [Capture Filter  ] [▶ Start] [■ Stop] [Proto ▼]│
 │ 🔍 [Display Filter                              ] [Apply]    │
@@ -277,7 +277,7 @@ nslookup google.com
 
 **Lucky** — Ethical Hacker
 
-**Tool Name: NetPhantom v3.0**
+**Tool Name: NetPhantom v3.1.3**
 
 ## 📜 License
 

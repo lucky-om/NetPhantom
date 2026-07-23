@@ -145,7 +145,7 @@ function initCliTerminal() {
             case "netphantom":
             case "sniff":
                 cliFeedback.style.color = "var(--cyan)";
-                cliFeedback.innerHTML = `[+] Initializing WinPcap/Npcap socket hooks...<br>[+] Active Interface: <strong>Wi-Fi (wlan0)</strong><br>[+] Running NetPhantom HUD v3.0 Packet Engine...`;
+                cliFeedback.innerHTML = `[+] Initializing WinPcap/Npcap socket hooks...<br>[+] Active Interface: <strong>Wi-Fi (wlan0)</strong><br>[+] Running NetPhantom HUD v3.1.3 Packet Engine...`;
                 const previewWindow = document.querySelector(".preview-window");
                 if (previewWindow) {
                     previewWindow.style.borderColor = "var(--cyan)";

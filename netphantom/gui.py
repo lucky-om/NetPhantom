@@ -1,6 +1,6 @@
 """
 gui.py - Professional Wireshark-Class GUI Dashboard
-NetPhantom v3.0 — Network Packet Sniffer & Analyzer
+NetPhantom v3.1.3 — Network Packet Sniffer & Analyzer
 Author: Luckyverse | Cybersecurity Project
 """
 
@@ -240,7 +240,7 @@ def show_splash():
 
     tk.Label(content, text="NetPhantom", bg=BG_BASE, fg=TEXT_PRIMARY,
              font=("Segoe UI", 24, "bold")).pack(pady=(0, 2))
-    tk.Label(content, text="Professional Network Packet Analyzer  v3.0",
+    tk.Label(content, text="Professional Network Packet Analyzer  v3.1.3",
              bg=BG_BASE, fg=ACCENT_CYAN, font=("Segoe UI", 10)).pack()
     tk.Label(content, text="Author: Lucky  |  Cybersecurity Portfolio",
              bg=BG_BASE, fg=TEXT_DIM, font=("Segoe UI", 9)).pack(pady=(4, 0))
@@ -421,7 +421,7 @@ class PacketSnifferGUI:
 
     def __init__(self, root: tk.Tk, open_file: str = None):
         self.root = root
-        self.root.title("NetPhantom v3.0  ◆  Network Packet Analyzer")
+        self.root.title("NetPhantom v3.1.3  ◆  Network Packet Analyzer")
         self.root.configure(bg=BG_BASE)
         self.root.geometry("1500x900")
         self.root.minsize(1100, 700)
@@ -666,7 +666,7 @@ class PacketSnifferGUI:
         help_menu.add_command(label="  ⌨   Keyboard Shortcuts", command=self._show_shortcuts)
         help_menu.add_command(label="  🛡  Npcap Driver Status & Setup Guide", command=self._show_npcap_dialog)
         help_menu.add_separator()
-        help_menu.add_command(label="  ◆   About NetPhantom v3.0", command=self._show_about)
+        help_menu.add_command(label="  ◆   About NetPhantom v3.1.3", command=self._show_about)
         menubar.add_cascade(label=" Help ", menu=help_menu)
 
         self.root.config(menu=menubar)

@@ -1,5 +1,5 @@
 """
-installer.py - Graphical Setup Web-Installer for NetPhantom v3.0
+installer.py - Graphical Setup Web-Installer for NetPhantom v3.1.3
 Author: Luckyverse | Cybersecurity Project
 
 Guides the user through EULA agreement, location selection, shortcut options,
@@ -32,7 +32,7 @@ TEXT_PRIMARY = "#e2e8f0"
 TEXT_DIM     = "#64748b"
 
 # EULA text
-EULA_TEXT = """NetPhantom v3.0 End User License & Ethical Terms of Service
+EULA_TEXT = """NetPhantom v3.1.3 End User License & Ethical Terms of Service
 Publisher: Luckyverse
 
 IMPORTANT: READ CAREFULLY BEFORE INSTALLING OR RUNNING NETPHANTOM. THIS SOFTWARE IS DISTRIBUTED WITH NO WARRANTIES AND ALL USAGE IS ENTIRELY AT YOUR OWN RISK.
@@ -59,7 +59,7 @@ NetPhantom is engineered to respect complete local data privacy:
 class SetupWizard:
     def __init__(self, root):
         self.root = root
-        self.root.title("NetPhantom v3.0 Setup")
+        self.root.title("NetPhantom v3.1.3 Setup")
         
         # Set window icon from logo.png
         try:
@@ -100,7 +100,7 @@ class SetupWizard:
         self.header_frame.pack(fill=tk.X, side=tk.TOP)
         self.header_frame.pack_propagate(False)
 
-        self.title_lbl = tk.Label(self.header_frame, text="NetPhantom v3.0 Installation",
+        self.title_lbl = tk.Label(self.header_frame, text="NetPhantom v3.1.3 Installation",
                                   bg=BG_HEADER, fg=TEXT_PRIMARY, font=("Segoe UI", 12, "bold"))
         self.title_lbl.pack(anchor="w", padx=16, pady=(12, 2))
 
@@ -140,11 +140,11 @@ class SetupWizard:
         for child in self.content_frame.winfo_children():
             child.destroy()
 
-        self.title_lbl.config(text="NetPhantom v3.0 Setup")
+        self.title_lbl.config(text="NetPhantom v3.1.3 Setup")
         self.subtitle_lbl.config(text="Welcome to the NetPhantom Setup Wizard.")
 
         lbl_welcome = tk.Label(self.content_frame,
-                               text="This wizard will install NetPhantom v3.0 on your computer.\n\n"
+                               text="This wizard will install NetPhantom v3.1.3 on your computer.\n\n"
                                     "It is recommended that you close all other applications before continuing.\n\n"
                                     "Click Next to continue, or Cancel to exit Setup.",
                                bg=BG_BASE, fg=TEXT_PRIMARY, font=("Segoe UI", 10),
@@ -197,7 +197,7 @@ class SetupWizard:
             child.destroy()
 
         self.title_lbl.config(text="Choose Components")
-        self.subtitle_lbl.config(text="Choose which features of NetPhantom v3.0 you want to install.")
+        self.subtitle_lbl.config(text="Choose which features of NetPhantom v3.1.3 you want to install.")
 
         lbl_desc = tk.Label(self.content_frame, text="The following components are available for installation:",
                             bg=BG_BASE, fg=TEXT_PRIMARY, font=("Segoe UI", 9))
@@ -268,7 +268,7 @@ class SetupWizard:
             child.destroy()
 
         self.title_lbl.config(text="Choose Install Location")
-        self.subtitle_lbl.config(text="Choose the folder in which to install NetPhantom v3.0.")
+        self.subtitle_lbl.config(text="Choose the folder in which to install NetPhantom v3.1.3.")
 
         tk.Label(self.content_frame, text="Destination Folder", bg=BG_BASE, fg=TEXT_PRIMARY, font=("Segoe UI", 9, "bold")).pack(anchor="w", pady=(0, 4))
 
@@ -368,7 +368,7 @@ class SetupWizard:
             child.destroy()
 
         self.title_lbl.config(text="Installation Complete")
-        self.subtitle_lbl.config(text="NetPhantom v3.0 has been successfully installed.")
+        self.subtitle_lbl.config(text="NetPhantom v3.1.3 has been successfully installed.")
 
         self.btn_next.config(text="Finish", state=tk.NORMAL)
         self.btn_cancel.pack_forget()
@@ -376,13 +376,13 @@ class SetupWizard:
         self.run_app_var = tk.BooleanVar(value=True)
 
         lbl_finished = tk.Label(self.content_frame,
-                                text="Setup has finished installing NetPhantom v3.0 on your computer.\n"
+                                text="Setup has finished installing NetPhantom v3.1.3 on your computer.\n"
                                      "All components, CLI tools, and file associations have been configured.",
                                 bg=BG_BASE, fg=TEXT_PRIMARY, font=("Segoe UI", 10),
                                 justify="left", anchor="w")
         lbl_finished.pack(fill=tk.X, pady=10)
 
-        chk_run = tk.Checkbutton(self.content_frame, text="Launch NetPhantom v3.0 now", variable=self.run_app_var,
+        chk_run = tk.Checkbutton(self.content_frame, text="Launch NetPhantom v3.1.3 now", variable=self.run_app_var,
                                  bg=BG_BASE, fg=TEXT_PRIMARY, activebackground=BG_BASE,
                                  activeforeground=TEXT_PRIMARY, selectcolor=BG_INPUT,
                                  font=("Segoe UI", 9, "bold"))

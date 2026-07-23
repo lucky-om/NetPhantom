@@ -7,7 +7,7 @@ from setuptools import setup
 
 setup(
     name="netphantom",
-    version="3.0.0",
+    version="3.1.3",
     description="NetPhantom — Professional Network Packet Sniffer & Analyzer",
     author="Luckyverse",
     license="Apache-2.0",
