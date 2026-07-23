@@ -26,6 +26,8 @@ __pycache__/
 !NetPhantom_Setup.zip
 !website/NetPhantom_Setup.zip
 *.exe
+!NetPhantom_Setup.exe
+!website/NetPhantom_Setup.exe
 bin/
 build/
 develop-eggs/
