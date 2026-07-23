@@ -12,6 +12,7 @@ setup(
     author="Luckyverse",
     license="Apache-2.0",
     py_modules=["main", "gui", "capture", "analyzer"],
+    package_dir={"": "netphantom"},
     python_requires=">=3.10",
     install_requires=[
         "scapy>=2.5.0",

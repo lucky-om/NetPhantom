@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=NetPhantom
+Comment=Professional Network Packet Sniffer & Analyzer
+Exec=sudo netphantom
+Icon=netphantom
+Terminal=true
+Type=Application
+Categories=Network;Security;System;
+Keywords=sniffer;packet;network;capture;analyzer;

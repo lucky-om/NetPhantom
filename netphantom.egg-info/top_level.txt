@@ -1,4 +1,0 @@
-analyzer
-capture
-gui
-main

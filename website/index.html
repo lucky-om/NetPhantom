@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NetPhantom — High-Precision Network Packet Sniffer & Threat Analyzer</title>
+    <meta name="description"
+        content="NetPhantom is an advanced network packet sniffer and deep dissection analyzer with built-in threat intelligence heuristics, structured inside a premium HUD interface.">
+    <!-- OpenGraph Metadata -->
+    <meta property="og:title" content="NetPhantom — High-Precision Network Packet Sniffer & Threat Analyzer">
+    <meta property="og:description"
+        content="Sniff, dissect, and audit network traffic in real-time. Standalone desktop setup installer available. Zero telemetry.">
+    <meta property="og:image"
+        content="https://raw.githubusercontent.com/Lucky/NetPhantom/main/website/assets/og-image.png">
+    <meta property="og:url" content="index.html">
+    <meta property="og:type" content="website">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="container navbar">
+            <a href="index.html" class="nav-logo" id="nav-logo-id">
+                <img src="logo.png" alt="NetPhantom Logo" class="nav-logo-icon">
+                <span class="nav-logo-text">NetPhantom</span>
+            </a>
+            <button class="mobile-nav-toggle" aria-label="Toggle Navigation" id="mobile-toggle-btn">☰</button>
+            <nav class="nav-menu">
+                <ul class="nav-links">
+                    <li><a href="index.html" class="active" id="nav-home-id">Home</a></li>
+                    <li><a href="download.html" id="nav-download-id">Download</a></li>
+                    <li><a href="docs.html" id="nav-docs-id">Docs</a></li>
+                    <li><a href="threats.html" id="nav-threats-id">Threats</a></li>
+                    <li><a href="privacy.html" id="nav-privacy-id">Privacy</a></li>
+                    <li><a href="https://github.com/lucky-om/NetPhantom" target="_blank" id="nav-github-id"
+                            class="btn btn-sm btn-secondary">GitHub ↗</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Asymmetric Split Hero Section -->
+    <main class="main-section hero-section">
+        <!-- Background Ambient Glow Orbs -->
+        <div class="ambient-orb ambient-orb-1"></div>
+        <div class="ambient-orb ambient-orb-2"></div>
+
+        <div class="container">
+            <div class="hero-grid">
+                <!-- Left Column: Headline, CLI Shell & Actions -->
+                <div class="hero-left" style="text-align:center;">
+                    <div class="hud-tag">
+                        <span class="status-dot"></span> NETPHANTOM v3.0
+                    </div>
+
+                    <!-- Dynamic Animated Shimmer & Gradient Flow Title -->
+                    <h1 class="hero-title" style="text-align:center;">
+                        <span class="animated-title-text">Observe, Dissect & Shield Network Traffic</span>
+                        <span class="animated-gradient-text">in Real-Time</span>
+                    </h1>
+
+                    <p class="hero-desc">
+                        A professional-grade deep packet inspection utility and stream monitoring console built on the
+                        Scapy parsing core. Engineered with localized traffic threat heuristics to isolate port scans,
+                        SYN floods, and ARP spoofing instantly.
+                    </p>
+
+                    <!-- Interactive CLI Launcher -->
+                    <div class="cli-panel">
+                        <div class="cli-hdr">// TACTICAL SHELL LAUNCHER</div>
+                        <div class="cli-sub">Microsoft Windows [Version 10.0.22631]</div>
+                        <div class="cli-input-line">
+                            <span class="cli-prompt">C:\Users\Lucky></span>
+                            <input type="text" class="cli-field" id="cli-shell-input"
+                                placeholder="Type 'netphantom' or click a command below..." autocomplete="off"
+                                spellcheck="false">
+                        </div>
+                        <div id="cli-feedback" class="cli-output"></div>
+                        <div class="cli-chips">
+                            <span class="cli-chip" data-cmd="netphantom">$ netphantom</span>
+                            <span class="cli-chip" data-cmd="threats">$ threats</span>
+                            <span class="cli-chip" data-cmd="status">$ status</span>
+                            <span class="cli-chip" data-cmd="download">$ download</span>
+                            <span class="cli-chip" data-cmd="help">$ help</span>
+                        </div>
+                    </div>
+
+                    <!-- Metrics Pills -->
+                    <div class="hero-stats-row">
+                        <div class="hero-stat-item">
+                            <span class="hero-stat-val">0.0ms</span>
+                            <span class="hero-stat-lbl">LATENCY</span>
+                        </div>
+                        <div class="stat-divider"></div>
+                        <div class="hero-stat-item">
+                            <span class="hero-stat-val">50+</span>
+                            <span class="hero-stat-lbl">PROTOCOLS</span>
+                        </div>
+                        <div class="stat-divider"></div>
+                        <div class="hero-stat-item">
+                            <span class="hero-stat-val">100%</span>
+                            <span class="hero-stat-lbl">ZERO-TELEMETRY</span>
+                        </div>
+                    </div>
+
+                    <div class="hero-actions">
+                        <a href="download.html" class="btn btn-primary" id="hero-dl-btn">
+                            Download Setup Wizard
+                        </a>
+                        <a href="https://github.com/lucky-om/NetPhantom" target="_blank" class="btn btn-secondary"
+                            id="hero-gh-btn">
+                            Source Repository
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Right Column: Live Simulated HUD Packet Sniffer -->
+                <div class="hero-right">
+                    <div class="preview-window">
+                        <div class="window-titlebar">
+                            <div class="window-dots">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                            <div class="window-title">NETPHANTOM_SOCKET_CAP_CONSOLE</div>
+                        </div>
+                        <div class="window-content">
+                            <!-- Injected dynamically by script.js -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bento Grid Feature Modules -->
+    <section class="main-section section-divider" style="background-color: var(--surface-lowest);">
+        <div class="container">
+            <div class="section-hdr text-center reveal-on-scroll">
+                <div class="hud-tag">SYSTEM_MODULES_CHECK</div>
+                <h2 style="font-size:2.5rem; margin-top:12px;">
+                    <span class="animated-title-text">Equipped For Cryptographic Audits &</span>
+                    <span class="animated-gradient-text">Threat Intelligence</span>
+                </h2>
+                <p>Architected with modular low-overhead socket handlers to inspect every raw frame without dropping
+                    packets.</p>
+            </div>
+
+            <div class="bento-grid">
+                <!-- Card 1: Bento Hero -->
+                <div class="panel bento-hero reveal-on-scroll">
+                    <div class="feature-icon-wrapper">
+                        <svg class="feature-icon-svg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </div>
+                    <span class="code-tag">Dissection Core v3.0</span>
+                    <h3>Multi-Layer Packet Dissection Engine</h3>
+                    <p>
+                        Expandable Wireshark-style protocol trees dissecting Frame parameters, Ethernet II MAC
+                        addresses, IPv4/IPv6 headers, ARP resolution records, TCP/UDP sockets, DNS query payloads, and
+                        TLS 1.3 Handshake SNI certificate fields.
+                    </p>
+                    <div class="dissection-preview-box">
+                        <span style="color:var(--cyan);">▼ Frame 142: 128 bytes on wire</span><br>
+                        &nbsp;&nbsp;<span style="color:var(--emerald);">▶ Ethernet II, Src: 00:50:56:c0:00:08, Dst:
+                            00:0c:29:4f:8e:35</span><br>
+                        &nbsp;&nbsp;<span style="color:var(--text-primary);">▼ Internet Protocol Version 4, Src:
+                            192.168.1.105, Dst: 104.21.32.185</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span>Protocol: TCP (6), Header Length: 20 bytes, TTL: 64</span><br>
+                        &nbsp;&nbsp;<span style="color:#f472b6;">▶ Transmission Control Protocol, Src Port: 51240, Dst
+                            Port: 443 [SYN]</span>
+                    </div>
+                </div>
+
+                <!-- Card 2: PCAP Session I/O -->
+                <div class="panel reveal-on-scroll">
+                    <div class="feature-icon-wrapper">
+                        <svg class="feature-icon-svg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                                d="M8 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-2m-4-1v8m0 0l3-3m-3 3L9 8m-5 5h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 00.707.293h3.172a1 1 0 00.707-.293l2.414-2.414a1 1 0 01.707-.293H20">
+                            </path>
+                        </svg>
+                    </div>
+                    <span class="code-tag">Session I/O</span>
+                    <h3>PCAP Stream Import / Export</h3>
+                    <p>Load external capture traces or dump live interface capture sessions as PCAP or structured JSON
+                        files directly.</p>
+                </div>
+
+                <!-- Card 3: Threat Warning Engine -->
+                <div class="panel reveal-on-scroll">
+                    <div class="feature-icon-wrapper icon-danger">
+                        <svg class="feature-icon-svg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
+                            </path>
+                        </svg>
+                    </div>
+                    <span class="code-tag text-error">Intrusion Rules</span>
+                    <h3>Intrusion Warning Engine</h3>
+                    <p>Integrated threat signature rules mapping packet frequencies and socket behaviors to flag scans,
+                        SYN floods, and ARP spoofing.</p>
+                </div>
+
+                <!-- Card 4: Conversation Path Map -->
+                <div class="panel reveal-on-scroll">
+                    <div class="feature-icon-wrapper icon-success">
+                        <svg class="feature-icon-svg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+                            </path>
+                        </svg>
+                    </div>
+                    <span class="code-tag text-emerald">Traffic Stats</span>
+                    <h3>Conversation Map</h3>
+                    <p>Track unique endpoint paths, active bi-directional streams, total bytes exchanged, and bandwidth
+                        distribution per host address.</p>
+                </div>
+
+                <!-- Card 5: Hardware Isolation -->
+                <div class="panel reveal-on-scroll">
+                    <div class="feature-icon-wrapper icon-warning">
+                        <svg class="feature-icon-svg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                            </path>
+                        </svg>
+                    </div>
+                    <span class="code-tag text-warning">Local Privacy</span>
+                    <h3>Absolute Isolation</h3>
+                    <p>Operates strictly in local hardware scope. Zero telemetry, crash reports, or packet statistics
+                        are uploaded to external channels.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comparison Matrix Section -->
+    <section class="main-section section-divider">
+        <div class="container">
+            <div class="section-hdr text-center reveal-on-scroll">
+                <div class="hud-tag">SYSTEM_COMPARISON_MATRIX</div>
+                <h2>Why Security Analysts Choose NetPhantom</h2>
+            </div>
+
+            <div class="panel table-responsive reveal-on-scroll">
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Capability Feature</th>
+                            <th>NetPhantom v3.0</th>
+                            <th>Standard Wireshark</th>
+                            <th>Native CLI (tcpdump)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Dark HUD Interface</strong></td>
+                            <td><span class="check-icon">✓ Built-in HUD Console</span></td>
+                            <td><span class="cross-icon">✕ Complex Legacy GUI</span></td>
+                            <td><span class="cross-icon">✕ Plain Text Stream</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Built-in Threat Heuristics</strong></td>
+                            <td><span class="check-icon">✓ Stateful Real-Time Alerts</span></td>
+                            <td><span class="cross-icon">✕ Requires Plugins</span></td>
+                            <td><span class="cross-icon">✕ None</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Zero-Telemetry Guarantee</strong></td>
+                            <td><span class="check-icon">✓ 100% Offline Local RAM</span></td>
+                            <td><span class="check-icon">✓ Offline Processing</span></td>
+                            <td><span class="check-icon">✓ Offline</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Zero-Config Pip / Standalone EXE</strong></td>
+                            <td><span class="check-icon">✓ Dual Installer Options</span></td>
+                            <td><span class="cross-icon">✕ Heavy WinPcap installer</span></td>
+                            <td><span class="cross-icon">✕ Command-line setup</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="main-section section-divider" style="background-color: var(--surface-lowest);">
+        <div class="container">
+            <div class="section-hdr text-center reveal-on-scroll" style="text-align:center;">
+                <div style="text-align:center;">
+                    <div class="hud-tag" style="margin: 0 auto 12px auto;">SYSTEM_FAQ_SHEET</div>
+                </div>
+                <h2>Frequently Asked Questions</h2>
+            </div>
+
+            <div class="faq-grid reveal-on-scroll">
+                <div class="faq-item">
+                    <div class="faq-question">What is NetPhantom and how is it used?</div>
+                    <div class="faq-answer">
+                        NetPhantom is a premium local network sniffer and dissection analyzer designed for security
+                        auditing, penetration testing, and packet flow debugging. It mirrors network interface card data
+                        into an interactive GUI HUD console.
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">Why does packet capture require administrator access?</div>
+                    <div class="faq-answer">
+                        Sniffing sockets operates at a low hardware level (promiscuous mode) to capture incoming and
+                        outgoing raw network frames. Operating systems require root permissions (sudo on Linux,
+                        Administrator on Windows) to access raw network adapters.
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">What is the difference between NetPhantom and Wireshark?</div>
+                    <div class="faq-answer">
+                        While Wireshark is an industry-standard enterprise tool, NetPhantom provides a streamlined,
+                        dark-themed HUD layout with built-in stateful threat detection heuristics (SYN flood warnings,
+                        port scan discovery, ARP cache change logs) right out of the box.
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">Is NetPhantom safe to run? Does it send any data to external servers?
+                    </div>
+                    <div class="faq-answer">
+                        NetPhantom is 100% private and telemetry-free. All captured frames, dissected fields, and threat
+                        diagnostics are processed in local volatile RAM and are never cached or uploaded to remote
+                        endpoints.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="section-divider">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <div class="nav-logo" style="margin-bottom:16px;">
+                        <img src="logo.png" alt="NetPhantom Logo" class="nav-logo-icon">
+                        <span class="nav-logo-text">NetPhantom</span>
+                    </div>
+                    <p>A professional Cybersecurity portfolio project designed to bring advanced packet capture
+                        capabilities and high-fidelity interface design to the desktop.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Documentation & Tools</h4>
+                    <ul>
+                        <li><a href="download.html">Download Release Installer</a></li>
+                        <li><a href="docs.html">User Guide & BPF Filters</a></li>
+                        <li><a href="threats.html">Intrusion Signatures Index</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Privacy & Security</h4>
+                    <ul>
+                        <li><a href="privacy.html">Privacy Policy</a></li>
+                        <li><a href="privacy.html#ethical-usage">Ethical Terms</a></li>
+                        <li><a href="https://github.com/lucky-om/NetPhantom" target="_blank">GitHub Repository</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div>© 2026 NetPhantom. Built by Luckyverse. Apache-2.0 License.</div>
+                <div class="status-ping-bar">
+                    <span class="status-dot"></span> SYSTEM OPERATIONAL — 99.9% UPTIME
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
