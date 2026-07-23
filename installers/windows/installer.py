@@ -11,8 +11,15 @@ import sys
 import shutil
 import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext
-import winshell
-from win32com.client import Dispatch
+try:
+    import winshell
+except ImportError:
+    winshell = None
+
+try:
+    from win32com.client import Dispatch
+except ImportError:
+    Dispatch = None
 
 # ──────────────────────────────────────────────
 #  Theme Constants
@@ -620,18 +627,22 @@ class SetupWizard:
         icon_file = os.path.join(self.install_dir, "logo.ico")
         if not os.path.exists(icon_file):
             icon_file = os.path.join(self.install_dir, "logo.png")
-        try:
-            shell = Dispatch('WScript.Shell')
-            shortcut = shell.CreateShortCut(link_path)
-            shortcut.Targetpath = target
-            shortcut.WorkingDirectory = os.path.dirname(target)
-            shortcut.Description = description
-            if os.path.exists(icon_file):
-                shortcut.IconLocation = f"{icon_file},0"
-            elif os.path.exists(target) and target.endswith(".exe"):
-                shortcut.IconLocation = f"{target},0"
-            shortcut.save()
-        except Exception:
+        if Dispatch:
+            try:
+                shell = Dispatch('WScript.Shell')
+                shortcut = shell.CreateShortCut(link_path)
+                shortcut.Targetpath = target
+                shortcut.WorkingDirectory = os.path.dirname(target)
+                shortcut.Description = description
+                if os.path.exists(icon_file):
+                    shortcut.IconLocation = f"{icon_file},0"
+                elif os.path.exists(target) and target.endswith(".exe"):
+                    shortcut.IconLocation = f"{target},0"
+                shortcut.save()
+                return
+            except Exception:
+                pass
+        if winshell:
             try:
                 winshell.CreateShortcut(
                     Path=link_path,
