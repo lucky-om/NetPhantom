@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=NetPhantom
+GenericName=Network Packet Analyzer & Security Dissection Core
+Comment=Professional Network Packet Sniffer, Deep Inspection & AI Threat Intelligence
+Exec=netphantom %f
+Icon=netphantom
+Terminal=false
+StartupNotify=true
+Categories=Network;Security;System;Monitor;
+Keywords=sniffer;packet;network;capture;analyzer;wireshark;pcap;security;ai;
+MimeType=application/vnd.tcpdump.pcap;application/x-pcapng;application/x-pcap;
