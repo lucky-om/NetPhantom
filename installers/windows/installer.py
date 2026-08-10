@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-installer.py - Graphical Setup Web-Installer for NetPhantom v3.3.1
+installer.py - Graphical Setup Web-Installer for NetPhantom v3.3.2
 Author: Luckyverse | Cybersecurity Project
 
 Guides the user through EULA agreement, location selection, shortcut options,
@@ -50,7 +50,7 @@ TEXT_SECONDARY = "#94a3b8"
 TEXT_DIM     = "#64748b"
 
 # EULA text
-EULA_TEXT = """NetPhantom v3.3.1 End User License & Ethical Terms of Service
+EULA_TEXT = """NetPhantom v3.3.2 End User License & Ethical Terms of Service
 Publisher: Luckyverse
 
 IMPORTANT: READ CAREFULLY BEFORE INSTALLING OR RUNNING NETPHANTOM. THIS SOFTWARE IS DISTRIBUTED WITH NO WARRANTIES AND ALL USAGE IS ENTIRELY AT YOUR OWN RISK.
@@ -77,7 +77,7 @@ NetPhantom is engineered to respect complete local data privacy:
 class SetupWizard:
     def __init__(self, root):
         self.root = root
-        self.root.title("NetPhantom v3.3.1 Setup")
+        self.root.title("NetPhantom v3.3.2 Setup")
         
         # Auto-clear Windows Mark of the Web (Zone.Identifier) if present
         if os.name == 'nt':
@@ -155,7 +155,7 @@ class SetupWizard:
         self.header_frame.pack(fill=tk.X, side=tk.TOP)
         self.header_frame.pack_propagate(False)
 
-        self.title_lbl = tk.Label(self.header_frame, text="NetPhantom v3.3.1 Installation",
+        self.title_lbl = tk.Label(self.header_frame, text="NetPhantom v3.3.2 Installation",
                                   bg=BG_HEADER, fg=TEXT_PRIMARY, font=("Segoe UI", 12, "bold"))
         self.title_lbl.pack(anchor="w", padx=16, pady=(12, 2))
 
@@ -201,13 +201,13 @@ class SetupWizard:
         for child in self.content_frame.winfo_children():
             child.destroy()
 
-        self.title_lbl.config(text="NetPhantom v3.3.1 Setup")
+        self.title_lbl.config(text="NetPhantom v3.3.2 Setup")
         self.subtitle_lbl.config(text="Welcome to the NetPhantom Setup Wizard.")
         self.btn_next.config(state=tk.NORMAL, text="Next >")
         self.btn_back.config(state=tk.DISABLED)
 
         lbl_welcome = tk.Label(self.content_frame,
-                               text="This wizard will install NetPhantom v3.3.1 on your computer.\n\n"
+                               text="This wizard will install NetPhantom v3.3.2 on your computer.\n\n"
                                     "It is recommended that you close all other applications before continuing.\n\n"
                                     "Click Next to continue, or Cancel to exit Setup.",
                                bg=BG_BASE, fg=TEXT_PRIMARY, font=("Segoe UI", 10),
@@ -261,7 +261,7 @@ class SetupWizard:
             child.destroy()
 
         self.title_lbl.config(text="Choose Components")
-        self.subtitle_lbl.config(text="Choose which features of NetPhantom v3.3.1 you want to install.")
+        self.subtitle_lbl.config(text="Choose which features of NetPhantom v3.3.2 you want to install.")
         self.btn_next.config(state=tk.NORMAL, text="Next >")
         self.btn_back.config(state=tk.NORMAL)
 
@@ -334,7 +334,7 @@ class SetupWizard:
             child.destroy()
 
         self.title_lbl.config(text="Choose Install Location")
-        self.subtitle_lbl.config(text="Choose the folder in which to install NetPhantom v3.3.1.")
+        self.subtitle_lbl.config(text="Choose the folder in which to install NetPhantom v3.3.2.")
 
         tk.Label(self.content_frame, text="Destination Folder", bg=BG_BASE, fg=TEXT_PRIMARY, font=("Segoe UI", 9, "bold")).pack(anchor="w", pady=(0, 4))
 
@@ -441,7 +441,7 @@ class SetupWizard:
             child.destroy()
 
         self.title_lbl.config(text="Installation Complete")
-        self.subtitle_lbl.config(text="NetPhantom v3.3.1 has been successfully installed.")
+        self.subtitle_lbl.config(text="NetPhantom v3.3.2 has been successfully installed.")
 
         self.btn_next.config(text="Finish", state=tk.NORMAL)
         self.btn_cancel.pack_forget()
@@ -449,13 +449,13 @@ class SetupWizard:
         self.run_app_var = tk.BooleanVar(value=True)
 
         lbl_finished = tk.Label(self.content_frame,
-                                text="Setup has finished installing NetPhantom v3.3.1 on your computer.\n"
+                                text="Setup has finished installing NetPhantom v3.3.2 on your computer.\n"
                                      "All components, CLI tools, and file associations have been configured.",
                                 bg=BG_BASE, fg=TEXT_PRIMARY, font=("Segoe UI", 10),
                                 justify="left", anchor="w")
         lbl_finished.pack(fill=tk.X, pady=10)
 
-        chk_run = tk.Checkbutton(self.content_frame, text="Launch NetPhantom v3.3.1 now", variable=self.run_app_var,
+        chk_run = tk.Checkbutton(self.content_frame, text="Launch NetPhantom v3.3.2 now", variable=self.run_app_var,
                                  bg=BG_BASE, fg=TEXT_PRIMARY, activebackground=BG_BASE,
                                  activeforeground=TEXT_PRIMARY, selectcolor=BG_INPUT,
                                  font=("Segoe UI", 9, "bold"))
@@ -601,7 +601,7 @@ class SetupWizard:
             try:
                 with open(cmd_launcher, "w", encoding="utf-8") as f:
                     f.write('@echo off\n')
-                    f.write('title NetPhantom v3.3.1\n')
+                    f.write('title NetPhantom v3.3.2\n')
                     f.write('cd /d "%~dp0"\n')
                     f.write('\n')
                     f.write('REM --- Try PyInstaller exe first ---\n')
@@ -632,7 +632,7 @@ class SetupWizard:
                     f.write('@echo off\n')
                     f.write('setlocal enabledelayedexpansion\n')
                     f.write('title NetPhantom Uninstaller\n')
-                    f.write('echo Uninstalling NetPhantom v3.3.1...\n')
+                    f.write('echo Uninstalling NetPhantom v3.3.2...\n')
                     f.write('taskkill /F /IM NetPhantom.exe >nul 2>&1\n')
                     f.write('timeout /t 1 >nul\n')
                     f.write('del /q "%APPDATA%\\Microsoft\\Windows\\Start Menu\\Programs\\NetPhantom\\NetPhantom.lnk" >nul 2>&1\n')
@@ -661,7 +661,7 @@ class SetupWizard:
                     f.write('title NetPhantom Debug Mode\n')
                     f.write('cd /d "%~dp0"\n')
                     f.write('echo ================================================\n')
-                    f.write('echo  NetPhantom v3.3.1 - Debug Launch\n')
+                    f.write('echo  NetPhantom v3.3.2 - Debug Launch\n')
                     f.write('echo ================================================\n')
                     f.write('echo.\n')
                     f.write('if exist "NetPhantom.exe" (\n')
@@ -797,9 +797,9 @@ class SetupWizard:
 
         try:
             with winreg.CreateKey(winreg.HKEY_CURRENT_USER, uninst_key_path) as ukey:
-                winreg.SetValueEx(ukey, "DisplayName",    0, winreg.REG_SZ, "NetPhantom Network Analyzer v3.3.1")
+                winreg.SetValueEx(ukey, "DisplayName",    0, winreg.REG_SZ, "NetPhantom Network Analyzer v3.3.2")
                 winreg.SetValueEx(ukey, "Publisher",      0, winreg.REG_SZ, "Luckyverse Security")
-                winreg.SetValueEx(ukey, "DisplayVersion", 0, winreg.REG_SZ, "3.3.1")
+                winreg.SetValueEx(ukey, "DisplayVersion", 0, winreg.REG_SZ, "3.3.2")
                 winreg.SetValueEx(ukey, "DisplayIcon",    0, winreg.REG_SZ,
                                   icon_path if os.path.exists(icon_path) else
                                   os.path.join(self.install_dir, "NetPhantom.exe"))

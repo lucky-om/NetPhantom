@@ -1,6 +1,6 @@
 """
-analyzer.py - Deep Packet Inspection, Protocol Dissection & Threat Detection
-NetPhantom v3.3.1 — Professional Network Packet Sniffer & Analyzer
+analyzer.py - Packet Decoding and Threat Detection
+NetPhantom v3.3.2 — Professional Network Packet Sniffer & Analyzer
 Author: Lucky | Cybersecurity Project
 """
 

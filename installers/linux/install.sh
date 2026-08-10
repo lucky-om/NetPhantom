@@ -1,6 +1,6 @@
 #!/bin/bash
 # install.sh - NetPhantom Linux Dependency & CLI/Desktop Installer
-# NetPhantom v3.3.1 — Professional Network Packet Sniffer & Threat Analyzer
+# NetPhantom v3.3.2 — Professional Network Packet Sniffer & Threat Analyzer
 # Author: Luckyverse | Cybersecurity Project
 
 set -e
@@ -13,7 +13,7 @@ BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
-VERSION="3.3.1"
+VERSION="3.3.2"
 
 echo -e "${RED}"
 cat << "EOF"

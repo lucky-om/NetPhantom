@@ -1,6 +1,6 @@
 """
 gui.py - Professional Wireshark-Class GUI Dashboard
-NetPhantom v3.3.1 — Network Packet Sniffer & Analyzer
+NetPhantom v3.3.2 — Network Packet Sniffer & Analyzer
 Author: Luckyverse | Cybersecurity Project
 """
 
@@ -35,7 +35,7 @@ def _find_logo_path():
             return os.path.abspath(p)
     return None
 
-from .capture import CaptureEngine, list_interfaces
+from .capture import CaptureEngine, list_interfaces, scan_wifi_networks
 from .analyzer import (
     PacketAnalyzer, format_packet_details, build_protocol_tree, format_hex_dump,
     PACKET_COLOR_RULES,
@@ -63,13 +63,11 @@ ACCENT_PURPLE  = "#8b5cf6"   # Violet — ARP
 ACCENT_PINK    = "#ec4899"   # Pink — TLS handshake
 ACCENT_ORANGE  = "#f97316"   # Orange — HTTP
 ACCENT_TEAL    = "#14b8a6"   # Teal — QUIC
-ACCENT_LIME    = "#84cc16"   # Lime — secondary
 
 # Text
 TEXT_PRIMARY   = "#e2e8f0"   # Bright readable text
 TEXT_SECONDARY = "#94a3b8"   # Secondary/dim text
 TEXT_DIM       = "#64748b"   # Subtle text
-TEXT_MUTED     = "#475569"   # Very dim
 
 # Protocol Text Colors (for packet list text)
 PROTO_TEXT_COLORS = {
@@ -88,14 +86,10 @@ PROTO_TEXT_COLORS = {
     "OTHER":           TEXT_DIM,
 }
 
-FONT_MAIN     = ("Segoe UI", 10)
 FONT_MAIN_SM  = ("Segoe UI", 9)
 FONT_MONO     = ("Consolas", 10)
 FONT_MONO_SM  = ("Consolas", 9)
 FONT_MONO_XS  = ("Consolas", 8)
-FONT_MONO_LG  = ("Consolas", 12, "bold")
-FONT_HDR      = ("Segoe UI", 11, "bold")
-FONT_TITLE    = ("Segoe UI", 14, "bold")
 FONT_STAT     = ("Consolas", 16, "bold")
 FONT_STAT_LBL = ("Segoe UI", 8)
 FONT_MENU     = ("Segoe UI", 9)
@@ -252,7 +246,7 @@ def show_splash():
 
     tk.Label(content, text="NetPhantom", bg=BG_BASE, fg=TEXT_PRIMARY,
              font=("Segoe UI", 24, "bold")).pack(pady=(0, 2))
-    tk.Label(content, text="Professional Network Packet Analyzer  v3.3.1",
+    tk.Label(content, text="Professional Network Packet Analyzer  v3.3.2",
              bg=BG_BASE, fg=ACCENT_CYAN, font=("Segoe UI", 10)).pack()
     tk.Label(content, text="Author: Lucky  |  Cybersecurity Portfolio",
              bg=BG_BASE, fg=TEXT_DIM, font=("Segoe UI", 9)).pack(pady=(4, 0))
@@ -466,7 +460,7 @@ class PacketSnifferGUI:
 
     def __init__(self, root: tk.Tk, open_file: str = None):
         self.root = root
-        self.root.title("NetPhantom v3.3.1  ◆  Network Packet Analyzer")
+        self.root.title("NetPhantom v3.3.2  ◆  Network Packet Analyzer")
         self.root.configure(bg=BG_BASE)
         self.root.geometry("1500x900")
         self.root.minsize(1100, 700)
@@ -589,6 +583,10 @@ class PacketSnifferGUI:
     #  UI Construction
     # ────────────────────────────────────────────
     def _build_ui(self):
+        self._filter_proto_var = tk.StringVar(value="ALL")
+        self.promisc_var = tk.BooleanVar(value=True)
+        self.monitor_var = tk.BooleanVar(value=False)
+        
         self._build_menu_bar()
         self._build_toolbar()
 
@@ -714,6 +712,13 @@ class PacketSnifferGUI:
                                  command=lambda: setattr(self, "_auto_scroll", self._auto_scroll_menu_var.get()))
         menubar.add_cascade(label=" View ", menu=view_menu)
 
+        # Tools menu
+        tools_menu = tk.Menu(menubar, tearoff=0, bg=BG_HEADER, fg=TEXT_PRIMARY,
+                           activebackground=ACCENT_BLUE, activeforeground="white",
+                           font=FONT_MENU)
+        tools_menu.add_command(label="  📡  Wi-Fi Scanner", command=self._show_wifi_scanner)
+        menubar.add_cascade(label=" Tools ", menu=tools_menu)
+
         # Help menu
         help_menu = tk.Menu(menubar, tearoff=0, bg=BG_HEADER, fg=TEXT_PRIMARY,
                            activebackground=ACCENT_BLUE, activeforeground="white",
@@ -722,7 +727,7 @@ class PacketSnifferGUI:
         help_menu.add_command(label="  ⌨   Keyboard Shortcuts", command=self._show_shortcuts)
         help_menu.add_command(label="  🛡  Npcap Driver Status & Setup Guide", command=self._show_npcap_dialog)
         help_menu.add_separator()
-        help_menu.add_command(label="  ◆   About NetPhantom v3.3.1", command=self._show_about)
+        help_menu.add_command(label="  ◆   About NetPhantom v3.3.2", command=self._show_about)
         menubar.add_cascade(label=" Help ", menu=help_menu)
 
         self.root.config(menu=menubar)
@@ -804,7 +809,7 @@ class PacketSnifferGUI:
         self._sep(toolbar)
         self._btn_start = self._make_btn(toolbar, "▶ Start",  ACCENT_GREEN,  self.start_capture)
         self._btn_stop  = self._make_btn(toolbar, "■ Stop",   ACCENT_RED,    self.stop_capture)
-        self._btn_clear = self._make_btn(toolbar, "⟳ Clear",  ACCENT_AMBER,  self.clear_packets)
+        self._make_btn(toolbar, "⟳ Clear",  ACCENT_AMBER,  self.clear_packets)
         self._btn_stop.config(state=tk.DISABLED)
 
         # Download Log button
@@ -1238,8 +1243,12 @@ class PacketSnifferGUI:
         if not iface:
             messagebox.showerror("No Interface", "Please select a network interface.")
             return
+        promisc_state = self.promisc_var.get()
+        monitor_state = self.monitor_var.get()
         self.engine = CaptureEngine(interface=iface, bpf_filter=bpf,
-                                    error_callback=self._on_capture_error)
+                                    error_callback=self._on_capture_error,
+                                    promisc=promisc_state,
+                                    monitor_mode=monitor_state)
         self.engine.start()
         self._btn_start.config(state=tk.DISABLED)
         self._btn_stop.config(state=tk.NORMAL)
@@ -1662,14 +1671,6 @@ class PacketSnifferGUI:
         else:
             # Var was already empty — trace won't fire, call manually
             self._apply_filter()
-
-    def _quick_filter(self, proto: str):
-        """Set the protocol filter via a badge button and refresh the table."""
-        self._filter_proto_var.set(proto)
-        # Update badge button active highlight
-        for p, btn in self._badge_btns.items():
-            btn.config(bg=BG_SELECTED if p == proto else BG_PANEL)
-        self._apply_filter()
 
     def _validate_bpf_filter(self):
         """Compile the BPF expression to check syntax; update the indicator dot."""
@@ -2184,7 +2185,7 @@ class PacketSnifferGUI:
         tk.Frame(inner, bg=BORDER, height=1).pack(fill=tk.X, padx=20, pady=12)
 
         rows = [
-            ("Version",  "3.3.1"),
+            ("Version",  "3.3.2"),
             ("Author",   "Lucky"),
             ("Category", "Cybersecurity Project"),
             ("Engine",   "Scapy + Tkinter"),
@@ -2814,12 +2815,9 @@ class PacketSnifferGUI:
         opt_frame = tk.Frame(input_frame, bg=BG_BASE)
         opt_frame.pack(fill=tk.X, padx=8, pady=4)
 
-        promisc_var = tk.BooleanVar(value=True)
-        mon_var = tk.BooleanVar(value=False)
-
         cb_style = {"bg": BG_BASE, "fg": TEXT_PRIMARY, "activebackground": BG_BASE, "selectcolor": BG_INPUT, "font": ("Segoe UI", 9)}
-        tk.Checkbutton(opt_frame, text="☑ Enable promiscuous mode on all interfaces", variable=promisc_var, **cb_style).pack(side=tk.LEFT, padx=(0, 16))
-        tk.Checkbutton(opt_frame, text="☐ Enable monitor mode on all 802.11 interfaces", variable=mon_var, **cb_style).pack(side=tk.LEFT)
+        tk.Checkbutton(opt_frame, text="☑ Enable promiscuous mode on all interfaces", variable=self.promisc_var, **cb_style).pack(side=tk.LEFT, padx=(0, 16))
+        tk.Checkbutton(opt_frame, text="☐ Enable monitor mode on all 802.11 interfaces", variable=self.monitor_var, **cb_style).pack(side=tk.LEFT)
 
         # Filter entry for selected interfaces
         flt_frame = tk.Frame(input_frame, bg=BG_BASE)
@@ -2847,7 +2845,82 @@ class PacketSnifferGUI:
         """Displays NetPhantom user manual & web documentation."""
         import webbrowser
         webbrowser.open("https://netphantom.luckyverse.tech/")
+    def _show_wifi_scanner(self):
+        """Display a dialog for scanning nearby Wi-Fi networks."""
+        import threading
+        from tkinter import messagebox
+        
+        warn = messagebox.askyesno("Wi-Fi Scan Warning", 
+                                   "Scanning for Wi-Fi networks will temporarily disconnect or pause your active Wi-Fi connection.\n\nDo you want to proceed?")
+        if not warn:
+            return
 
+        top = tk.Toplevel(self.root)
+        top.title("NetPhantom Wi-Fi Scanner")
+        top.geometry("750x450")
+        top.configure(bg=BG_BASE)
+        top.transient(self.root)
+        top.grab_set()
+
+        # Header
+        hdr_frame = tk.Frame(top, bg=BG_PANEL, height=50)
+        hdr_frame.pack(fill=tk.X)
+        hdr_frame.pack_propagate(False)
+        tk.Label(hdr_frame, text="📡  Available Wi-Fi Networks", bg=BG_PANEL, fg=ACCENT_CYAN,
+                 font=("Segoe UI", 12, "bold")).pack(side=tk.LEFT, padx=12, pady=12)
+
+        # Table
+        tbl_frame = tk.Frame(top, bg=BG_BASE)
+        tbl_frame.pack(fill=tk.BOTH, expand=True, padx=12, pady=12)
+        
+        cols = ("SSID", "BSSID", "Channel", "Signal", "Security")
+        tree = ttk.Treeview(tbl_frame, columns=cols, show="headings", style="Custom.Treeview")
+        for c in cols:
+            tree.heading(c, text=c)
+            tree.column(c, width=120)
+        tree.pack(fill=tk.BOTH, expand=True)
+
+        # Bottom Bar
+        bottom = tk.Frame(top, bg=BG_PANEL, height=50)
+        bottom.pack(fill=tk.X, side=tk.BOTTOM)
+        bottom.pack_propagate(False)
+        
+        status_lbl = tk.Label(bottom, text="Scanning... Please wait up to 5 seconds.", bg=BG_PANEL, fg=ACCENT_AMBER, font=("Segoe UI", 9))
+        status_lbl.pack(side=tk.LEFT, padx=12)
+
+        results = []
+
+        def export_results():
+            if not results: return
+            from tkinter import filedialog
+            path = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text file", "*.txt")], title="Save Wi-Fi Scan")
+            if path:
+                try:
+                    with open(path, "w", encoding="utf-8") as f:
+                        f.write(f"{'SSID':<30} {'BSSID':<20} {'CH':<5} {'SIGNAL':<8} {'SECURITY'}\n")
+                        f.write("="*80 + "\n")
+                        for r in results:
+                            f.write(f"{r['ssid']:<30} {r['bssid']:<20} {r['channel']:<5} {r['signal']:<8} {r['security']}\n")
+                    messagebox.showinfo("Export Success", f"Saved scan results to {path}")
+                except Exception as e:
+                    messagebox.showerror("Export Error", f"Failed to save: {e}")
+
+        btn_export = tk.Button(bottom, text="Export TXT", command=export_results, state=tk.DISABLED, bg=BG_INPUT, fg=TEXT_PRIMARY, relief="flat")
+        btn_export.pack(side=tk.RIGHT, padx=12, pady=8)
+
+        def run_scan():
+            nonlocal results
+            results = scan_wifi_networks()
+            def update_ui():
+                status_lbl.config(text=f"Scan complete. Found {len(results)} networks.", fg=ACCENT_GREEN)
+                btn_export.config(state=tk.NORMAL)
+                for r in results:
+                    tree.insert("", tk.END, values=(r["ssid"], r["bssid"], r["channel"], f"{r['signal']} dBm", r["security"]))
+            top.after(0, update_ui)
+
+        threading.Thread(target=run_scan, daemon=True).start()
+
+    
 
 # ──────────────────────────────────────────────
 #  Launch

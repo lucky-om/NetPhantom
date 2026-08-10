@@ -1,6 +1,6 @@
 """
 capture.py - Packet Capture Engine using Scapy
-NetPhantom v3.3.1 — Professional Network Packet Sniffer & Analyzer
+NetPhantom v3.3.2 — Professional Network Packet Sniffer & Analyzer
 Author: Lucky | Cybersecurity Project
 """
 
@@ -30,8 +30,6 @@ def init_c_libpcap():
                 pass
     return None
 
-C_WPCAP_LIB = init_c_libpcap()
-
 def scan_wifi_networks() -> list[dict]:
     """Scan and return available wireless networks using PyWiFi."""
     results = []
@@ -42,19 +40,28 @@ def scan_wifi_networks() -> list[dict]:
         if ifaces:
             iface = ifaces[0]
             iface.scan()
-            time.sleep(0.5)
+            time.sleep(1.0)
             bss = iface.scan_results()
             for b in bss:
-                if getattr(b, 'ssid', ''):
+                ssid = getattr(b, 'ssid', '')
+                if ssid:
+                    sec = "OPEN"
+                    akm = getattr(b, 'akm', [])
+                    if akm:
+                        if pywifi.const.AKM_TYPE_WPA2PSK in akm: sec = "WPA2"
+                        elif pywifi.const.AKM_TYPE_WPAPSK in akm: sec = "WPA"
+                        elif pywifi.const.AKM_TYPE_WPA2 in akm: sec = "WPA2-Enterprise"
+                    
                     results.append({
-                        "ssid": b.ssid,
+                        "ssid": ssid,
                         "bssid": getattr(b, 'bssid', ''),
+                        "channel": getattr(b, 'freq', 0) // 1000, # Approximation for display
                         "signal": getattr(b, 'signal', 0),
+                        "security": sec
                     })
     except Exception as e:
-        logger.debug(f"PyWiFi scan notice: {e}")
+        logger.debug(f"PyWiFi scan error: {e}")
     return results
-
 
 # ─────────────────────────────────────────────
 #  Capture Engine
@@ -70,11 +77,13 @@ class CaptureEngine:
     RAW_PACKET_MAXLEN = 500_000
 
     def __init__(self, interface: str = None, bpf_filter: str = "",
-                 save_path: str = None, error_callback=None):
+                 save_path: str = None, error_callback=None, promisc: bool = True, monitor_mode: bool = False):
         self.interface = interface or conf.iface
         self.bpf_filter = bpf_filter.strip()
         self.save_path = save_path
         self.error_callback = error_callback  # Called with error string on failures
+        self.promisc = promisc
+        self.monitor_mode = monitor_mode
 
         self.analyzer = PacketAnalyzer()
         self.packet_queue: queue.Queue = queue.Queue(maxsize=100_000)
@@ -210,29 +219,6 @@ class CaptureEngine:
                 self.error_callback(err.message)
             return False
 
-    def export_json(self, path: str) -> bool:
-        """Save parsed packet summaries to a JSON file."""
-        import json
-        try:
-            temp_analyzer = PacketAnalyzer()
-            data = []
-            with self._running_lock:
-                packets_snapshot = list(self.raw_packets)
-            for raw_pkt in packets_snapshot:
-                try:
-                    pkt_info = temp_analyzer.parse(raw_pkt)
-                    safe = {k: v for k, v in pkt_info.items() if k != "raw_pkt"}
-                    data.append(safe)
-                except Exception:
-                    pass
-            with open(path, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=2, default=str)
-            return True
-        except Exception as e:
-            err = ExportError(f"JSON export failed: {e}")
-            if self.error_callback:
-                self.error_callback(err.message)
-            return False
 
     def export_txt(self, path: str, stored_packets: list) -> bool:
         """Save a plain-text summary of displayed packets."""
@@ -279,6 +265,8 @@ class CaptureEngine:
                     store=False,
                     stop_filter=lambda _: self._stop_event.is_set(),
                     timeout=1,
+                    promisc=self.promisc,
+                    monitor=self.monitor_mode,
                 )
             except PermissionError:
                 err = PrivilegeError("Permission denied. Run as Administrator / root.")

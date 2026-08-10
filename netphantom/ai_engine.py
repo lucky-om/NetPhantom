@@ -1,8 +1,10 @@
 """
 ai_engine.py — AI Packet Analysis Engine
-NetPhantom v3.3.1 — Phantom AI Threat Intelligence
+NetPhantom v3.3.2 — Phantom AI Threat Intelligence
 """
 
+import base64
+import itertools
 import json
 import logging
 import os
@@ -65,9 +67,19 @@ def get_api_key() -> Optional[str]:
     if env_key and env_key.startswith("gsk_") and len(env_key) >= 20:
         return env_key
 
-    # No embedded key — require explicit configuration
+    # 2. Fallback: Embedded obfuscated key
+    try:
+        encoded = "FxsKMUQIVGpKeDEDNh1APFQEAmA+Ai8qIygJSlEBNjFYCBk+N1B5QBQLVjsHFzcHd2Y5JSc0Mx0="
+        xor_key = "phantom332"
+        decoded_bytes = base64.b64decode(encoded)
+        embedded_key = "".join([chr(b ^ ord(k)) for b, k in zip(decoded_bytes, itertools.cycle(xor_key))])
+        if embedded_key.startswith("gsk_"):
+            return embedded_key
+    except Exception as e:
+        logger.debug(f"Failed to decode embedded API key: {e}")
+
     logger.warning(
-        "No GROQ_API_KEY / PHANTOM_API_KEY found. "
+        "No valid GROQ_API_KEY / PHANTOM_API_KEY found, and fallback failed. "
         "Set it as an environment variable or in a .env file. "
         "AI features will be disabled until configured."
     )
@@ -180,10 +192,11 @@ def analyze_packet(packet_data: dict) -> dict:
     num = packet_data.get("index", "?")     # Parsed packet dict key is "index"
 
     system_prompt = (
-        "You are Phantom AI, a network security analyzer. Be brief and direct.\n"
+        "You are Phantom AI, a network security analyzer. Your goal is to explain network packets in a very simple, human-understandable way so that a normal, non-technical user can understand exactly what is happening.\n"
+        "Avoid overly complex jargon. Summarize the packet's intent clearly and simply.\n"
         "Analyze this packet and respond with ONLY this JSON:\n"
-        '{"risk_level":"LOW or MEDIUM or HIGH or CRITICAL","analysis":"1-2 sentences max","remediation":"1 action to take"}\n'
-        "No markdown. No code blocks. JSON only. Keep it very short."
+        '{"risk_level":"LOW or MEDIUM or HIGH or CRITICAL","analysis":"1-3 very simple, easy-to-understand sentences explaining what this packet means for a normal user","remediation":"1 very simple, actionable step if needed"}\n'
+        "No markdown. No code blocks. JSON only. Keep it simple and direct."
     )
 
     user_prompt = (
@@ -214,7 +227,7 @@ def analyze_packet(packet_data: dict) -> dict:
             headers={
                 "Content-Type": "application/json",
                 "Authorization": f"Bearer {api_key}",
-                "User-Agent": "NetPhantom/3.3.1"
+                "User-Agent": "NetPhantom/3.3.2"
             },
             method="POST"
         )
@@ -413,7 +426,7 @@ def analyze_bulk_capture(packets_data: list[dict]) -> dict:
             headers={
                 "Content-Type": "application/json",
                 "Authorization": f"Bearer {api_key}",
-                "User-Agent": "NetPhantom/3.3.1"
+                "User-Agent": "NetPhantom/3.3.2"
             },
             method="POST"
         )

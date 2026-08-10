@@ -1,6 +1,6 @@
 """
-errors.py - Custom Error Hierarchy & Standardized Error Handling
-NetPhantom v3.3.1 — Professional Network Packet Sniffer & Analyzer
+errors.py - Custom Exceptions
+NetPhantom v3.3.2 — Professional Network Packet Sniffer & Analyzer
 Author: Luckyverse | Cybersecurity Portfolio Project
 
 Follows standardized error response structure:
@@ -65,18 +65,6 @@ class PrivilegeError(NetPhantomError):
         super().__init__(message, status=403, code="FORBIDDEN_PRIVILEGE", expose=True)
 
 
-class NotFoundError(NetPhantomError):
-    """HTTP 404 - Specified network interface, PCAP file, or resource not found."""
-    def __init__(self, message: str = "Requested network interface or file not found."):
-        super().__init__(message, status=404, code="NOT_FOUND", expose=True)
-
-
-class RateLimitError(NetPhantomError):
-    """HTTP 429 - Packet capture buffer overrun or rate limit hit."""
-    def __init__(self, message: str = "Capture rate limit exceeded or buffer overrun."):
-        super().__init__(message, status=429, code="RATE_LIMITED", expose=True)
-
-
 class CaptureEngineError(NetPhantomError):
     """HTTP 500 - Internal socket or driver capture engine failure."""
     def __init__(self, message: str):
@@ -87,23 +75,3 @@ class ExportError(NetPhantomError):
     """HTTP 500 - PCAP, JSON, or TXT file export failure."""
     def __init__(self, message: str):
         super().__init__(message, status=500, code="EXPORT_FAILED", expose=True)
-
-
-def handle_exception(exc: Exception) -> dict:
-    """
-    Central error handler function.
-    Converts any caught exception into standardized response shape.
-    """
-    if isinstance(exc, NetPhantomError):
-        return exc.to_dict()
-    
-    # Unhandled / generic 500 error
-    logger.exception("[UNHANDLED_EXCEPTION] %s", exc)
-    return {
-        "ok": False,
-        "error": {
-            "code": "INTERNAL_SERVER_ERROR",
-            "message": "Something went wrong. Please check system logs.",
-            "status": 500
-        }
-    }

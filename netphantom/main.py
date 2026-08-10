@@ -1,6 +1,6 @@
 """
 main.py - Entry Point
-NetPhantom v3.3.1 — Professional Network Packet Sniffer & Analyzer
+NetPhantom v3.3.2 — Professional Network Packet Sniffer & Analyzer
 Author: Luckyverse | Cybersecurity Portfolio Project
 
 Usage:
@@ -104,11 +104,11 @@ def parse_arguments() -> argparse.Namespace:
 
     parser = argparse.ArgumentParser(
         prog="netphantom",
-        description="NetPhantom v3.3.1 — Professional Network Packet Analyzer\n  Usage: netphantom",
+        description="NetPhantom v3.3.2 — Professional Network Packet Analyzer\n  Usage: netphantom",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument("file_pos", nargs="?", default=None, help="PCAP file to open")
-    parser.add_argument("--version", "-V", action="version", version="NetPhantom v3.3.1")
+    parser.add_argument("--version", "-V", action="version", version="NetPhantom v3.3.2")
     parser.add_argument("--list-interfaces", "-l", action="store_true",
                         help="Print available network interfaces and exit")
     parser.add_argument("--open", "-o", type=str, default=None, metavar="FILE",
@@ -220,7 +220,7 @@ def main():
 
     _sigint_received = [False]
 
-    def _handle_sigint(signum, frame):
+    def _handle_sigint(_sig, _frame):
         if _sigint_received[0]:
             print("\n[NetPhantom] Force quit.", file=sys.stderr)
             os._exit(1)
