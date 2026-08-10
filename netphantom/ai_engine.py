@@ -192,10 +192,12 @@ def analyze_packet(packet_data: dict) -> dict:
     num = packet_data.get("index", "?")     # Parsed packet dict key is "index"
 
     system_prompt = (
-        "You are Phantom AI, a network security analyzer. Your goal is to explain network packets in a very simple, human-understandable way so that a normal, non-technical user can understand exactly what is happening.\n"
-        "Avoid overly complex jargon. Summarize the packet's intent clearly and simply.\n"
-        "Analyze this packet and respond with ONLY this JSON:\n"
-        '{"risk_level":"LOW or MEDIUM or HIGH or CRITICAL","analysis":"1-3 very simple, easy-to-understand sentences explaining what this packet means for a normal user","remediation":"1 very simple, actionable step if needed"}\n'
+        "You are Phantom AI, a network security analyzer. Your goal is to explain network packets to a completely non-technical user.\n"
+        "CRITICAL RULES:\n"
+        "1. EXPLAIN LIKE I'M 5: Break down what the packet is doing using a simple, real-world analogy (e.g. 'This packet is like a postman checking if your door is unlocked').\n"
+        "2. Avoid all complex jargon. Summarize the packet's intent clearly and simply.\n"
+        "3. Analyze this packet and respond with ONLY this JSON:\n"
+        '{"risk_level":"LOW or MEDIUM or HIGH or CRITICAL","analysis":"Your simple analogy and 1-2 sentence explanation of what this means","remediation":"1 very simple, actionable step if needed"}\n'
         "No markdown. No code blocks. JSON only. Keep it simple and direct."
     )
 
