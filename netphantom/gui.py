@@ -1354,12 +1354,13 @@ class PacketSnifferGUI:
     # ────────────────────────────────────────────
     def _poll_packets(self):
         """Drain the capture queue and update the GUI. Reschedules itself only while running."""
+        import time
         if not self.engine or not self.engine.is_running():
             self._poll_job = None
             return
         try:
             batch = 0
-            while batch < 60:
+            while batch < 250:
                 try:
                     pkt = self.engine.packet_queue.get_nowait()
                     self._stored_packets.append(pkt)
@@ -1376,18 +1377,26 @@ class PacketSnifferGUI:
                     self._item_pkt.pop(old_iid, None)
                     self._tree.delete(old_iid)
             if self.engine.is_running():
-                stats = self.engine.get_stats()
-                self._update_stats(stats)
-                self._update_streams()
-                self._update_endpoints()
-                self._update_alerts()
-                self._update_graph(stats)
-                self._pkt_count_lbl.config(text=f"{stats['total']} packets")
+                now = time.time()
+                if not hasattr(self, '_last_heavy_update'):
+                    self._last_heavy_update = 0
+                
+                if now - self._last_heavy_update >= 0.5:
+                    stats = self.engine.get_stats()
+                    self._update_stats(stats)
+                    self._update_streams()
+                    self._update_endpoints()
+                    self._update_alerts()
+                    self._update_graph(stats)
+                    self._pkt_count_lbl.config(text=f"{stats['total']} packets")
+                    self._last_heavy_update = now
+                
                 # Reschedule only if still running
-                self._poll_job = self.root.after(80, self._poll_packets)
+                self._poll_job = self.root.after(100, self._poll_packets)
             else:
                 self._poll_job = None
         except Exception as exc:
+            import sys
             print(f"[GUI] poll error: {exc}", file=sys.stderr)
             self._poll_job = None
 
