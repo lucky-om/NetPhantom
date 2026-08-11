@@ -31,36 +31,76 @@ def init_c_libpcap():
     return None
 
 def scan_wifi_networks() -> list[dict]:
-    """Scan and return available wireless networks using PyWiFi."""
+    """Scan and return available wireless networks using native OS commands or PyWiFi."""
     results = []
-    try:
-        import pywifi
-        wifi = pywifi.PyWiFi()
-        ifaces = wifi.interfaces()
-        if ifaces:
-            iface = ifaces[0]
-            iface.scan()
-            time.sleep(1.0)
-            bss = iface.scan_results()
-            for b in bss:
-                ssid = getattr(b, 'ssid', '')
-                if ssid:
-                    sec = "OPEN"
-                    akm = getattr(b, 'akm', [])
-                    if akm:
-                        if pywifi.const.AKM_TYPE_WPA2PSK in akm: sec = "WPA2"
-                        elif pywifi.const.AKM_TYPE_WPAPSK in akm: sec = "WPA"
-                        elif pywifi.const.AKM_TYPE_WPA2 in akm: sec = "WPA2-Enterprise"
-                    
-                    results.append({
-                        "ssid": ssid,
-                        "bssid": getattr(b, 'bssid', ''),
-                        "channel": getattr(b, 'freq', 0) // 1000, # Approximation for display
-                        "signal": getattr(b, 'signal', 0),
-                        "security": sec
-                    })
-    except Exception as e:
-        logger.debug(f"PyWiFi scan error: {e}")
+    
+    if os.name == 'nt':
+        try:
+            import subprocess
+            # Fetch from Windows WLAN API via netsh
+            output = subprocess.check_output(["netsh", "wlan", "show", "networks", "mode=bssid"], creationflags=0x08000000, text=True, errors="ignore")
+            current_ssid = ""
+            current_auth = ""
+            for line in output.split('\n'):
+                line = line.strip()
+                if line.startswith("SSID"):
+                    parts = line.split(":")
+                    if len(parts) > 1:
+                        current_ssid = parts[1].strip()
+                elif line.startswith("Authentication"):
+                    parts = line.split(":")
+                    if len(parts) > 1:
+                        current_auth = parts[1].strip()
+                elif line.startswith("BSSID"):
+                    parts = line.split(":")
+                    if len(parts) > 1:
+                        bssid_val = ":".join(parts[1:]).strip()
+                        results.append({
+                            "ssid": current_ssid or "<Hidden>",
+                            "bssid": bssid_val,
+                            "channel": "?",
+                            "signal": "?",
+                            "security": current_auth
+                        })
+                elif line.startswith("Signal"):
+                    parts = line.split(":")
+                    if len(parts) > 1 and results:
+                        results[-1]["signal"] = parts[1].strip().replace("%", "")
+                elif line.startswith("Channel"):
+                    parts = line.split(":")
+                    if len(parts) > 1 and results:
+                        results[-1]["channel"] = parts[1].strip()
+        except Exception as e:
+            logger.debug(f"Netsh scan error: {e}")
+    else:
+        try:
+            import pywifi
+            wifi = pywifi.PyWiFi()
+            ifaces = wifi.interfaces()
+            if ifaces:
+                iface = ifaces[0]
+                iface.scan()
+                time.sleep(2.0)
+                bss = iface.scan_results()
+                for b in bss:
+                    ssid = getattr(b, 'ssid', '')
+                    if ssid:
+                        sec = "OPEN"
+                        akm = getattr(b, 'akm', [])
+                        if akm:
+                            if pywifi.const.AKM_TYPE_WPA2PSK in akm: sec = "WPA2"
+                            elif pywifi.const.AKM_TYPE_WPAPSK in akm: sec = "WPA"
+                            elif pywifi.const.AKM_TYPE_WPA2 in akm: sec = "WPA2-Enterprise"
+                        results.append({
+                            "ssid": ssid,
+                            "bssid": getattr(b, 'bssid', ''),
+                            "channel": getattr(b, 'freq', 0) // 1000,
+                            "signal": getattr(b, 'signal', 0),
+                            "security": sec
+                        })
+        except Exception as e:
+            logger.debug(f"PyWiFi scan error: {e}")
+            
     return results
 
 # ─────────────────────────────────────────────

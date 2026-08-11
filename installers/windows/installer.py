@@ -298,7 +298,7 @@ class SetupWizard:
         tk.Checkbutton(tree_frame, text="   UDPdump (UDP Listener & Raw Capture Tool)", variable=self.comp_udpdump, **cb_style).pack(anchor="w", padx=32, pady=1)
 
         # Space Required Label
-        tk.Label(self.content_frame, text="Space required: 35.0 MB", bg=BG_BASE, fg=TEXT_DIM, font=("Segoe UI", 9, "bold")).pack(anchor="w", pady=(4, 0))
+        tk.Label(self.content_frame, text="Space required: 85.0 MB", bg=BG_BASE, fg=TEXT_DIM, font=("Segoe UI", 9, "bold")).pack(anchor="w", pady=(4, 0))
 
     def _show_step_4(self):
         # Step 4: Additional Tasks 
@@ -364,7 +364,7 @@ class SetupWizard:
 
         space_frame = tk.Frame(self.content_frame, bg=BG_BASE)
         space_frame.pack(fill=tk.X, pady=16)
-        tk.Label(space_frame, text="Space required: 35.0 MB", bg=BG_BASE, fg=TEXT_SECONDARY, font=("Segoe UI", 9)).pack(anchor="w")
+        tk.Label(space_frame, text="Space required: 85.0 MB", bg=BG_BASE, fg=TEXT_SECONDARY, font=("Segoe UI", 9)).pack(anchor="w")
         tk.Label(space_frame, text=f"Space available: {avail_gb} GB", bg=BG_BASE, fg=TEXT_SECONDARY, font=("Segoe UI", 9)).pack(anchor="w")
 
     def _show_step_6(self):

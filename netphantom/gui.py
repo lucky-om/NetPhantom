@@ -717,6 +717,8 @@ class PacketSnifferGUI:
                            activebackground=ACCENT_BLUE, activeforeground="white",
                            font=FONT_MENU)
         tools_menu.add_command(label="  📡  Wi-Fi Scanner", command=self._show_wifi_scanner)
+        tools_menu.add_separator()
+        tools_menu.add_command(label="  🤖  Phantom AI Packet Explainer", command=self._ai_explain_packet)
         menubar.add_cascade(label=" Tools ", menu=tools_menu)
 
         # Help menu
@@ -2693,7 +2695,7 @@ class PacketSnifferGUI:
     def _show_extcap_dialog(self):
         top = tk.Toplevel(self.root)
         top.title("External Capture Tools (extcap)")
-        top.geometry("540x380")
+        top.geometry("540x450")
         top.configure(bg=BG_BASE)
         top.transient(self.root)
 
