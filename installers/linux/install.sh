@@ -15,8 +15,23 @@ NC='\033[0m' # No Color
 
 VERSION="3.3.2"
 
+# Clear terminal for clean installation UI
+clear
+
+# Initialization Animation
+echo -e "${CYAN}Initializing NetPhantom Secure Installer...${NC}"
+echo -ne "${BLUE}[ "
+for i in {1..25}; do
+    echo -ne "█"
+    sleep 0.04
+done
+echo -e " ] 100%${NC}\n"
+sleep 0.2
+clear
+
 echo -e "${RED}"
-cat << "EOF"
+# Center ASCII art with sed
+cat << "EOF" | sed 's/^/                    /'
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣀⣀⣀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣴⣾⣿⣿⣿⣿⣿⣿⣶⣄⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣾⣿⣿⣿⣿⣿⠿⢿⣿⣿⣿⣿⣆⠀⠀
@@ -34,11 +49,12 @@ cat << "EOF"
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠀⠀⠀⠀⠀⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 EOF
 echo -e "${CYAN}"
-echo -e "================================================================================="
-echo -e "                     ◆  N E T P H A N T O M   v${VERSION}  ◆"
-echo -e "            Professional Network Packet Sniffer & Threat Analyzer"
-echo -e "================================================================================="
+echo -e "         ========================================================================="
+echo -e "                              ◆  N E T P H A N T O M   v${VERSION}  ◆"
+echo -e "                     Professional Network Packet Sniffer & Threat Analyzer"
+echo -e "         ========================================================================="
 echo -e "${NC}"
+sleep 0.5
 
 # Handle Uninstall Flag
 if [ "$1" == "--uninstall" ] || [ "$1" == "-u" ]; then
@@ -102,6 +118,9 @@ else
 fi
 
 # Install Python Package
+sleep 0.5
+echo -e "${BLUE}[*] Bootstrapping Python Environment...${NC}"
+sleep 0.3
 echo -e "${BLUE}[*] Installing NetPhantom Python package & dependencies...${NC}"
 cd "$PROJECT_ROOT"
 
@@ -161,9 +180,10 @@ if [ -f "$DESKTOP_SRC" ]; then
     echo -e "${GREEN}[✓] Desktop shortcut installed to /usr/share/applications/netphantom.desktop${NC}"
 fi
 
-echo -e "${CYAN}=====================================================${NC}"
-echo -e "${GREEN}[✓] NetPhantom v${VERSION} Installation Complete!${NC}"
-echo -e "    • Terminal Launch: ${CYAN}netphantom${NC} (or ${CYAN}sudo netphantom${NC})"
-echo -e "    • Desktop Launch: Find ${CYAN}NetPhantom${NC} in Application Menu"
-echo -e "    • Uninstall:       ${CYAN}sudo ./install.sh --uninstall${NC}"
-echo -e "${CYAN}=====================================================${NC}"
+echo -e "${CYAN}         =========================================================================${NC}"
+echo -e "${GREEN}         [✓] NetPhantom v${VERSION} Installation Complete!${NC}"
+echo -e "             • Terminal Launch: ${CYAN}netphantom${NC} (or ${CYAN}sudo netphantom${NC})"
+echo -e "             • Desktop Launch: Find ${CYAN}NetPhantom${NC} in Application Menu"
+echo -e "             • Uninstall:       ${CYAN}sudo ./installers/linux/install.sh --uninstall${NC}"
+echo -e "${CYAN}         =========================================================================${NC}"
+echo ""
