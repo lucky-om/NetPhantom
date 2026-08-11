@@ -316,7 +316,11 @@ class CaptureEngine:
                     self._running = False
                 break
             except OSError as e:
-                err = CaptureEngineError(f"Network interface capture error: {e}")
+                err_str = str(e).lower()
+                if "operation not permitted" in err_str or "errno 1" in err_str:
+                    err = PrivilegeError("Permission denied. You must run NetPhantom as root (sudo) on Linux to capture packets.")
+                else:
+                    err = CaptureEngineError(f"Network interface capture error: {e}")
                 if self.error_callback:
                     self.error_callback(err.message)
                 with self._running_lock:
@@ -402,7 +406,7 @@ def resolve_scapy_interface(iface_input):
 def list_interfaces() -> list[str]:
     """Return a list of available network interface names sorted by physical activity priority."""
     try:
-        from scapy.all import get_working_ifaces, conf
+        from scapy.all import get_working_ifaces, conf, get_if_list
         raw_ifaces = get_working_ifaces()
 
         def priority_score(iface_obj):
@@ -411,9 +415,9 @@ def list_interfaces() -> list[str]:
             has_ip = 1 if (ip and ip != "127.0.0.1" and ip != "0.0.0.0") else 0
 
             # Prioritize Wi-Fi and Ethernet with valid IP addresses
-            if "wi-fi" in name or "wifi" in name or "wlan" in name:
+            if "wi-fi" in name or "wifi" in name or "wlan" in name or "wlp" in name:
                 return (100 + has_ip * 50)
-            if "ethernet" in name or "eth" in name:
+            if "ethernet" in name or "eth" in name or "enp" in name:
                 return (90 + has_ip * 50)
             if "local area connection" in name and "*" not in name:
                 return (70 + has_ip * 30)
@@ -424,6 +428,14 @@ def list_interfaces() -> list[str]:
 
         sorted_objs = sorted(raw_ifaces, key=priority_score, reverse=True)
         names = [o.name for o in sorted_objs if getattr(o, "name", None)]
+
+        # Ensure we capture ALL raw OS interfaces (fixes Linux wlan0/wlp2s0 missing)
+        try:
+            for raw_iface in get_if_list():
+                if raw_iface not in names:
+                    names.append(raw_iface)
+        except Exception:
+            pass
 
         # Deduplicate while preserving order
         unique_names = list(dict.fromkeys(names))
