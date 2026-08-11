@@ -29,6 +29,11 @@ NetPhantom is available as a standalone executable for multiple platforms. You d
 3. For AppImage, make it executable: `chmod +x NetPhantom*.AppImage`
 4. Run with root privileges to capture packets: `sudo ./NetPhantom*.AppImage`
 
+### 🐧 Linux (From Source)
+1. Clone the repository: `git clone https://github.com/lucky-om/NetPhantom`
+2. Change directory: `cd NetPhantom`
+3. Run the installer script: `sudo bash ./installers/linux/install.sh`
+
 ### 🍏 macOS (DMG)
 1. Go to the **Releases** page on GitHub.
 2. Download the `.dmg` file.
