@@ -69,7 +69,7 @@ def get_api_key() -> Optional[str]:
 
     # 2. Fallback: Embedded obfuscated key
     try:
-        encoded = "FxsKMUQIVGpKeDEDNh1APFQEAmA+Ai8qIygJSlEBNjFYCBk+N1B5QBQLVjsHFzcHd2Y5JSc0Mx0="
+        encoded = "FxsKMRMkCGRZC0UsMhkQGVkCQGooGVAZIygJSlEBNjEYLTYmKHFXekQeACsnGAtmCnQcEAojM1o="
         xor_key = "phantom332"
         decoded_bytes = base64.b64decode(encoded)
         embedded_key = "".join([chr(b ^ ord(k)) for b, k in zip(decoded_bytes, itertools.cycle(xor_key))])
