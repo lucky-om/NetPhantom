@@ -21,7 +21,7 @@ except Exception:
     pass
 
 try:
-    import winshell
+    import winshell  # type: ignore
 except ImportError:
     winshell = None
 
@@ -93,7 +93,7 @@ class SetupWizard:
 
         # Set window icon from logo.png
         try:
-            from PIL import Image, ImageTk
+            from PIL import Image, ImageTk  # type: ignore
             _logo_candidates = [
                 os.path.join(os.path.dirname(os.path.abspath(__file__)), "logo.png"),
                 os.path.join(getattr(sys, '_MEIPASS', '.'), "logo.png"),

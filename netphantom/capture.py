@@ -9,7 +9,7 @@ import threading
 import queue
 import time
 from collections import deque
-from scapy.all import sniff, wrpcap, rdpcap, conf
+from scapy.all import sniff, wrpcap, rdpcap, conf  # type: ignore
 
 from .analyzer import PacketAnalyzer
 from .errors import (
@@ -411,7 +411,7 @@ def resolve_scapy_interface(iface_input):
         return conf.iface
 
     try:
-        from scapy.all import conf, IFACES
+        from scapy.all import conf, IFACES  # type: ignore
 
         # 1. Exact match in IFACES (by devname, name, or description)
         for key, iface_obj in IFACES.items():
@@ -448,7 +448,7 @@ def resolve_scapy_interface(iface_input):
 def list_interfaces() -> list[str]:
     """Return a list of available network interface names sorted by physical activity priority."""
     try:
-        from scapy.all import get_working_ifaces, conf, get_if_list
+        from scapy.all import get_working_ifaces, conf, get_if_list  # type: ignore
 
         raw_ifaces = get_working_ifaces()
 

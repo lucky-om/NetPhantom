@@ -8,16 +8,16 @@ import time
 import ipaddress
 from datetime import datetime
 from collections import defaultdict
-from scapy.all import IP, IPv6, TCP, UDP, ICMP, ARP, DNS, DNSQR, DNSRR, Raw, Ether
+from scapy.all import IP, IPv6, TCP, UDP, ICMP, ARP, DNS, DNSQR, DNSRR, Raw, Ether  # type: ignore
 
 # ─────────────────────────────────────────────
 #  Optional Layer Loading
 # ─────────────────────────────────────────────
 try:
-    from scapy.all import load_layer
+    from scapy.all import load_layer  # type: ignore
 
     load_layer("tls")
-    from scapy.layers.tls.all import (
+    from scapy.layers.tls.all import (  # type: ignore
         TLS,
         TLSClientHello,
         TLSServerHello,
@@ -29,10 +29,10 @@ except Exception:
     HAS_TLS = False
 
 try:
-    from scapy.all import load_layer
+    from scapy.all import load_layer  # type: ignore
 
     load_layer("http")
-    from scapy.layers.http import HTTPRequest, HTTPResponse
+    from scapy.layers.http import HTTPRequest, HTTPResponse  # type: ignore
 
     HAS_HTTP = True
 except Exception:
