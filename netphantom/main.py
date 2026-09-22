@@ -38,7 +38,7 @@ def _install_crash_logger():
             with open(_LOG_FILE, "a", encoding="utf-8") as f:
                 f.write(f"\n{'='*60}\n")
                 f.write(f"Crash: {exc_type.__name__}: {exc_value}\n")
-                f.write(f"Traceback:\n")
+                f.write("Traceback:\n")
                 traceback.print_exception(exc_type, exc_value, exc_tb, file=f)
                 f.write(f"{'='*60}\n")
         except Exception:

@@ -39,7 +39,6 @@ def _find_logo_path():
 
 from .capture import CaptureEngine, list_interfaces, scan_wifi_networks
 from .analyzer import (
-    PacketAnalyzer,
     format_packet_details,
     build_protocol_tree,
     format_hex_dump,
@@ -187,7 +186,7 @@ def show_splash():
                         n["y"],
                         nodes[j]["x"],
                         nodes[j]["y"],
-                        fill=f"#1e3a5f",
+                        fill="#1e3a5f",
                         tags="particle",
                         width=1,
                     )
@@ -3656,7 +3655,7 @@ class PacketSnifferGUI:
             lbl.pack(anchor="w", pady=4, fill=tk.X, expand=True)
             lbl.bind(
                 "<Configure>",
-                lambda e, l=lbl: l.config(wraplength=l.winfo_width() - 10),
+                lambda e, lbl_ref=lbl: lbl_ref.config(wraplength=lbl_ref.winfo_width() - 10),
             )
 
         # Footer Action Button
@@ -3806,7 +3805,7 @@ class PacketSnifferGUI:
         top.configure(bg=BG_BASE)
         top.transient(self.root)
 
-        import sys, os
+        import os
 
         system32 = os.path.join(os.environ.get("SystemRoot", "C:\\Windows"), "System32")
         npcap_exists = os.path.exists(
