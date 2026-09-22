@@ -30,48 +30,64 @@ class NetPhantomError(Exception):
     """
     Base Error Class for all NetPhantom application exceptions.
     """
-    def __init__(self, message: str, status: int = 500, code: str = "INTERNAL_ERROR", expose: bool = False):
+
+    def __init__(
+        self,
+        message: str,
+        status: int = 500,
+        code: str = "INTERNAL_ERROR",
+        expose: bool = False,
+    ):
         super().__init__(message)
         self.message = message
         self.status = status
         self.code = code
         self.expose = expose
-        
+
         # Log error immediately
-        logger.error(f"[{self.code}] Status: {self.status} | Expose: {self.expose} | Detail: {message}")
+        logger.error(
+            f"[{self.code}] Status: {self.status} | Expose: {self.expose} | Detail: {message}"
+        )
 
     def to_dict(self) -> dict:
         """Return standardized error dictionary shape."""
-        safe_msg = self.message if self.expose else "An unexpected error occurred. Please check logs."
+        safe_msg = (
+            self.message
+            if self.expose
+            else "An unexpected error occurred. Please check logs."
+        )
         return {
             "ok": False,
-            "error": {
-                "code": self.code,
-                "message": safe_msg,
-                "status": self.status
-            }
+            "error": {"code": self.code, "message": safe_msg, "status": self.status},
         }
 
 
 class ValidationError(NetPhantomError):
     """HTTP 400 - Invalid input, bad BPF syntax, or malformed parameters."""
+
     def __init__(self, message: str):
         super().__init__(message, status=400, code="VALIDATION_ERROR", expose=True)
 
 
 class PrivilegeError(NetPhantomError):
     """HTTP 403 - Missing root / Administrator socket permissions."""
-    def __init__(self, message: str = "Administrator or root privileges required to capture packets."):
+
+    def __init__(
+        self,
+        message: str = "Administrator or root privileges required to capture packets.",
+    ):
         super().__init__(message, status=403, code="FORBIDDEN_PRIVILEGE", expose=True)
 
 
 class CaptureEngineError(NetPhantomError):
     """HTTP 500 - Internal socket or driver capture engine failure."""
+
     def __init__(self, message: str):
         super().__init__(message, status=500, code="CAPTURE_ENGINE_ERROR", expose=False)
 
 
 class ExportError(NetPhantomError):
     """HTTP 500 - PCAP, JSON, or TXT file export failure."""
+
     def __init__(self, message: str):
         super().__init__(message, status=500, code="EXPORT_FAILED", expose=True)

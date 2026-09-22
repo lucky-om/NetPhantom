@@ -19,6 +19,7 @@ from typing import Optional
 
 logger = logging.getLogger("NetPhantom.AI")
 
+
 # ─────────────────────────────────────────────
 #  Secure Environment Variable Loader
 # ─────────────────────────────────────────────
@@ -29,7 +30,7 @@ def _load_dotenv():
         os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"),
         os.path.join(os.getcwd(), ".env"),
     ]
-    if hasattr(sys, '_MEIPASS'):
+    if hasattr(sys, "_MEIPASS"):
         env_paths.insert(0, os.path.join(sys._MEIPASS, ".env"))
 
     for env_path in env_paths:
@@ -49,7 +50,9 @@ def _load_dotenv():
                 logger.info("Loaded environment from %s", env_path)
                 return True
             except Exception as e:
-                logger.warning("Failed to read .env at %s: %s", env_path, type(e).__name__)
+                logger.warning(
+                    "Failed to read .env at %s: %s", env_path, type(e).__name__
+                )
     return False
 
 
@@ -63,16 +66,26 @@ _load_dotenv()
 def get_api_key() -> Optional[str]:
     """Retrieve the Groq API key from environment variable or .env file only."""
     # 1. Primary: env var (set by GitHub Actions, OS env, or .env file)
-    env_key = os.environ.get("GROQ_API_KEY", os.environ.get("PHANTOM_API_KEY", "")).strip()
+    env_key = os.environ.get(
+        "GROQ_API_KEY", os.environ.get("PHANTOM_API_KEY", "")
+    ).strip()
     if env_key and env_key.startswith("gsk_") and len(env_key) >= 20:
         return env_key
 
     # 2. Fallback: Embedded obfuscated key
     try:
-        encoded = "FxsKMRMkCGRZC0UsMhkQGVkCQGooGVAZIygJSlEBNjEYLTYmKHFXekQeACsnGAtmCnQcEAojM1o="
+        encoded = (
+            "FxsKMRMkCGRZC0UsMhkQGVkCQGooGVAZIygJSlE"
+            "BNjEYLTYmKHFXekQeACsnGAtmCnQcEAojM1o="
+        )
         xor_key = "phantom332"
         decoded_bytes = base64.b64decode(encoded)
-        embedded_key = "".join([chr(b ^ ord(k)) for b, k in zip(decoded_bytes, itertools.cycle(xor_key))])
+        embedded_key = "".join(
+            [
+                chr(b ^ ord(k))
+                for b, k in zip(decoded_bytes, itertools.cycle(xor_key))
+            ]
+        )
         if embedded_key.startswith("gsk_"):
             return embedded_key
     except Exception as e:
@@ -93,21 +106,22 @@ def is_ai_available() -> bool:
 
 # Anti-Jailbreak & Prompt Injection Defense Signatures (OWASP LLM01:2025)
 _INJECTION_PATTERNS = [
-    r'ignore\s+(?:all\s+)?(?:previous|prior)\s+instructions',
-    r'disregard\s+(?:all\s+)?(?:previous|prior)\s+instructions',
-    r'forget\s+all\s+rules',
-    r'system\s+override',
-    r'jailbreak',
-    r'dan\s+mode',
-    r'developer\s+mode',
-    r'act\s+as\s+(?:root|admin|god|unrestricted)',
-    r'bypass\s+safety',
-    r'<\|im_start\|>',
-    r'<\|im_end\|>',
-    r'\[INST\]',
-    r'\[/INST\]',
-    r'<<SYS>>',
+    r"ignore\s+(?:all\s+)?(?:previous|prior)\s+instructions",
+    r"disregard\s+(?:all\s+)?(?:previous|prior)\s+instructions",
+    r"forget\s+all\s+rules",
+    r"system\s+override",
+    r"jailbreak",
+    r"dan\s+mode",
+    r"developer\s+mode",
+    r"act\s+as\s+(?:root|admin|god|unrestricted)",
+    r"bypass\s+safety",
+    r"<\|im_start\|>",
+    r"<\|im_end\|>",
+    r"\[INST\]",
+    r"\[/INST\]",
+    r"<<SYS>>",
 ]
+
 
 def _sanitize_input(text: str) -> str:
     """Sanitize input data before sending to API (OWASP A03 Injection & LLM Jailbreak Defense)."""
@@ -117,12 +131,14 @@ def _sanitize_input(text: str) -> str:
     # Truncate to prevent token exhaustion / buffer abuse
     text = text[:_MAX_INPUT_LENGTH]
     # Strip control characters (keep printable ASCII + common unicode)
-    text = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]', '', text)
+    text = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]", "", text)
 
     # Neutralize prompt injection / jailbreak keywords
     for pattern in _INJECTION_PATTERNS:
         if re.search(pattern, text, re.IGNORECASE):
-            logger.warning("Prompt injection / jailbreak attempt neutralised: %s", pattern)
+            logger.warning(
+                "Prompt injection / jailbreak attempt neutralised: %s", pattern
+            )
             text = re.sub(pattern, "[SECURITY_BLOCKED]", text, flags=re.IGNORECASE)
 
     # Neutralize markdown and system role injection tags
@@ -184,12 +200,17 @@ def analyze_packet(packet_data: dict) -> dict:
     proto = _sanitize_input(str(packet_data.get("protocol", "UNKNOWN")))
     src = _sanitize_input(str(packet_data.get("src", "Unknown")))
     dst = _sanitize_input(str(packet_data.get("dst", "Unknown")))
-    length = packet_data.get("length", 0)   # Parsed packet dict key is "length"
-    info = _sanitize_input(str(
-        packet_data.get("tls_info") or packet_data.get("http_info") or
-        packet_data.get("behavior", "") or packet_data.get("flags") or ""
-    ))
-    num = packet_data.get("index", "?")     # Parsed packet dict key is "index"
+    length = packet_data.get("length", 0)  # Parsed packet dict key is "length"
+    info = _sanitize_input(
+        str(
+            packet_data.get("tls_info")
+            or packet_data.get("http_info")
+            or packet_data.get("behavior", "")
+            or packet_data.get("flags")
+            or ""
+        )
+    )
+    num = packet_data.get("index", "?")  # Parsed packet dict key is "index"
 
     system_prompt = (
         "You are Phantom AI, a network security analyzer built for NetPhantom (created by Lucky-OM). Your goal is to explain network packets to a completely non-technical user.\n"
@@ -215,11 +236,11 @@ def analyze_packet(packet_data: dict) -> dict:
         "model": _MODEL,
         "messages": [
             {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
+            {"role": "user", "content": user_prompt},
         ],
         "max_tokens": _MAX_TOKENS,
         "temperature": 0.3,
-        "stream": False
+        "stream": False,
     }
 
     try:
@@ -230,13 +251,15 @@ def analyze_packet(packet_data: dict) -> dict:
             headers={
                 "Content-Type": "application/json",
                 "Authorization": f"Bearer {api_key}",
-                "User-Agent": "NetPhantom/3.3.2"
+                "User-Agent": "NetPhantom/3.3.2",
             },
-            method="POST"
+            method="POST",
         )
 
         ssl_ctx = _create_ssl_context()
-        with urllib.request.urlopen(req, timeout=_TIMEOUT_SECONDS, context=ssl_ctx) as resp:
+        with urllib.request.urlopen(
+            req, timeout=_TIMEOUT_SECONDS, context=ssl_ctx
+        ) as resp:
             raw = resp.read().decode("utf-8")
 
         # Parse API response (OWASP A08 — validate, never eval)
@@ -246,8 +269,8 @@ def analyze_packet(packet_data: dict) -> dict:
         # Extract JSON from response (handle potential markdown wrapping)
         content = content.strip()
         if content.startswith("```"):
-            content = re.sub(r'^```(?:json)?\s*', '', content)
-            content = re.sub(r'\s*```$', '', content)
+            content = re.sub(r"^```(?:json)?\s*", "", content)
+            content = re.sub(r"\s*```$", "", content)
 
         result = json.loads(content)
 
@@ -261,7 +284,7 @@ def analyze_packet(packet_data: dict) -> dict:
             "LOW": "#10b981",
             "MEDIUM": "#f59e0b",
             "HIGH": "#ef4444",
-            "CRITICAL": "#dc2626"
+            "CRITICAL": "#dc2626",
         }
         risk_color = risk_colors.get(risk.split()[0] if risk else "LOW", "#10b981")
 
@@ -270,7 +293,7 @@ def analyze_packet(packet_data: dict) -> dict:
             "risk_color": risk_color,
             "analysis": analysis,
             "remediation": remediation,
-            "ai_powered": True
+            "ai_powered": True,
         }
 
     except urllib.error.HTTPError as e:
@@ -362,8 +385,9 @@ def _fallback_analysis(packet_data: dict, error: str = "") -> dict:
         "risk_color": risk_color,
         "analysis": prefix + analysis,
         "remediation": remediation,
-        "ai_powered": False
+        "ai_powered": False,
     }
+
 
 def analyze_bulk_capture(packets_data: list[dict]) -> dict:
     """
@@ -402,11 +426,11 @@ def analyze_bulk_capture(packets_data: list[dict]) -> dict:
         proto = _sanitize_input(str(p.get("protocol", "UNKNOWN")))
         src = _sanitize_input(str(p.get("src", "Unknown")))
         dst = _sanitize_input(str(p.get("dst", "Unknown")))
-        info = _sanitize_input(str(p.get("info", "")))[:100] # trim info
+        info = _sanitize_input(str(p.get("info", "")))[:100]  # trim info
         lines.append(f"{proto} {src}->{dst}: {info}")
-        
+
     user_prompt = "PACKET LOG:\n" + "\n".join(lines)
-    
+
     # Optional: truncate user prompt if it gets extremely long
     user_prompt = user_prompt[:4000]
 
@@ -414,11 +438,11 @@ def analyze_bulk_capture(packets_data: list[dict]) -> dict:
         "model": _MODEL,
         "messages": [
             {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
+            {"role": "user", "content": user_prompt},
         ],
         "max_tokens": 200,
         "temperature": 0.3,
-        "stream": False
+        "stream": False,
     }
 
     try:
@@ -429,13 +453,15 @@ def analyze_bulk_capture(packets_data: list[dict]) -> dict:
             headers={
                 "Content-Type": "application/json",
                 "Authorization": f"Bearer {api_key}",
-                "User-Agent": "NetPhantom/3.3.2"
+                "User-Agent": "NetPhantom/3.3.2",
             },
-            method="POST"
+            method="POST",
         )
 
         ssl_ctx = _create_ssl_context()
-        with urllib.request.urlopen(req, timeout=_TIMEOUT_SECONDS, context=ssl_ctx) as resp:
+        with urllib.request.urlopen(
+            req, timeout=_TIMEOUT_SECONDS, context=ssl_ctx
+        ) as resp:
             raw = resp.read().decode("utf-8")
 
         api_resp = json.loads(raw)
@@ -443,11 +469,11 @@ def analyze_bulk_capture(packets_data: list[dict]) -> dict:
 
         content = content.strip()
         if content.startswith("```"):
-            content = re.sub(r'^```(?:json)?\s*', '', content)
-            content = re.sub(r'\s*```$', '', content)
+            content = re.sub(r"^```(?:json)?\s*", "", content)
+            content = re.sub(r"\s*```$", "", content)
 
         result = json.loads(content)
-        
+
         # Format the recommendations as a bulleted string if it's a list
         recs = result.get("key_recommendations", ["No specific recommendations."])
         if isinstance(recs, list):
@@ -460,7 +486,7 @@ def analyze_bulk_capture(packets_data: list[dict]) -> dict:
             "analysis": str(result.get("threat_summary", "Analysis unavailable.")),
             "remediation": recs_str,
             "ai_powered": True,
-            "is_bulk": True
+            "is_bulk": True,
         }
 
     except Exception as e:

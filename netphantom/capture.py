@@ -13,16 +13,22 @@ from scapy.all import sniff, wrpcap, rdpcap, conf
 
 from .analyzer import PacketAnalyzer
 from .errors import (
-    PrivilegeError, CaptureEngineError, ExportError, ValidationError, logger
+    PrivilegeError,
+    CaptureEngineError,
+    ExportError,
+    ValidationError,
+    logger,
 )
+
 
 # ─────────────────────────────────────────────
 #  C Libpcap & PyWiFi Integration Helpers
 # ─────────────────────────────────────────────
 def init_c_libpcap():
     """Directly bind C wpcap.dll / Packet.dll Npcap engine via ctypes."""
-    if os.name == 'nt':
+    if os.name == "nt":
         import ctypes
+
         for dll in ["wpcap.dll", "Packet.dll", r"C:\Windows\System32\Npcap\wpcap.dll"]:
             try:
                 return ctypes.cdll.LoadLibrary(dll)
@@ -30,18 +36,25 @@ def init_c_libpcap():
                 pass
     return None
 
+
 def scan_wifi_networks() -> list[dict]:
     """Scan and return available wireless networks using native OS commands or PyWiFi."""
     results = []
-    
-    if os.name == 'nt':
+
+    if os.name == "nt":
         try:
             import subprocess
+
             # Fetch from Windows WLAN API via netsh
-            output = subprocess.check_output(["netsh", "wlan", "show", "networks", "mode=bssid"], creationflags=0x08000000, text=True, errors="ignore")
+            output = subprocess.check_output(
+                ["netsh", "wlan", "show", "networks", "mode=bssid"],
+                creationflags=0x08000000,
+                text=True,
+                errors="ignore",
+            )
             current_ssid = ""
             current_auth = ""
-            for line in output.split('\n'):
+            for line in output.split("\n"):
                 line = line.strip()
                 if line.startswith("SSID"):
                     parts = line.split(":")
@@ -55,13 +68,15 @@ def scan_wifi_networks() -> list[dict]:
                     parts = line.split(":")
                     if len(parts) > 1:
                         bssid_val = ":".join(parts[1:]).strip()
-                        results.append({
-                            "ssid": current_ssid or "<Hidden>",
-                            "bssid": bssid_val,
-                            "channel": "?",
-                            "signal": "?",
-                            "security": current_auth
-                        })
+                        results.append(
+                            {
+                                "ssid": current_ssid or "<Hidden>",
+                                "bssid": bssid_val,
+                                "channel": "?",
+                                "signal": "?",
+                                "security": current_auth,
+                            }
+                        )
                 elif line.startswith("Signal"):
                     parts = line.split(":")
                     if len(parts) > 1 and results:
@@ -75,6 +90,7 @@ def scan_wifi_networks() -> list[dict]:
     else:
         try:
             import pywifi
+
             wifi = pywifi.PyWiFi()
             ifaces = wifi.interfaces()
             if ifaces:
@@ -83,25 +99,31 @@ def scan_wifi_networks() -> list[dict]:
                 time.sleep(2.0)
                 bss = iface.scan_results()
                 for b in bss:
-                    ssid = getattr(b, 'ssid', '')
+                    ssid = getattr(b, "ssid", "")
                     if ssid:
                         sec = "OPEN"
-                        akm = getattr(b, 'akm', [])
+                        akm = getattr(b, "akm", [])
                         if akm:
-                            if pywifi.const.AKM_TYPE_WPA2PSK in akm: sec = "WPA2"
-                            elif pywifi.const.AKM_TYPE_WPAPSK in akm: sec = "WPA"
-                            elif pywifi.const.AKM_TYPE_WPA2 in akm: sec = "WPA2-Enterprise"
-                        results.append({
-                            "ssid": ssid,
-                            "bssid": getattr(b, 'bssid', ''),
-                            "channel": getattr(b, 'freq', 0) // 1000,
-                            "signal": getattr(b, 'signal', 0),
-                            "security": sec
-                        })
+                            if pywifi.const.AKM_TYPE_WPA2PSK in akm:
+                                sec = "WPA2"
+                            elif pywifi.const.AKM_TYPE_WPAPSK in akm:
+                                sec = "WPA"
+                            elif pywifi.const.AKM_TYPE_WPA2 in akm:
+                                sec = "WPA2-Enterprise"
+                        results.append(
+                            {
+                                "ssid": ssid,
+                                "bssid": getattr(b, "bssid", ""),
+                                "channel": getattr(b, "freq", 0) // 1000,
+                                "signal": getattr(b, "signal", 0),
+                                "security": sec,
+                            }
+                        )
         except Exception as e:
             logger.debug(f"PyWiFi scan error: {e}")
-            
+
     return results
+
 
 # ─────────────────────────────────────────────
 #  Capture Engine
@@ -116,8 +138,15 @@ class CaptureEngine:
     # Maximum raw packets kept in memory — set very high to avoid data loss
     RAW_PACKET_MAXLEN = 500_000
 
-    def __init__(self, interface: str = None, bpf_filter: str = "",
-                 save_path: str = None, error_callback=None, promisc: bool = True, monitor_mode: bool = False):
+    def __init__(
+        self,
+        interface: str = None,
+        bpf_filter: str = "",
+        save_path: str = None,
+        error_callback=None,
+        promisc: bool = True,
+        monitor_mode: bool = False,
+    ):
         self.interface = interface or conf.iface
         self.bpf_filter = bpf_filter.strip()
         self.save_path = save_path
@@ -137,12 +166,12 @@ class CaptureEngine:
         self._running_lock = threading.Lock()
 
         self.start_time: float | None = None
-        self.pps_counter = 0            # Packets this second
-        self.pps_value = 0              # Exported/read packets/sec
+        self.pps_counter = 0  # Packets this second
+        self.pps_value = 0  # Exported/read packets/sec
         self._pps_last_ts: float = 0
-        self.bps_value = 0              # Bytes per second
+        self.bps_value = 0  # Bytes per second
         self._bps_counter = 0
-        self._pps_history: list = []    # (timestamp, pps) for throughput graph
+        self._pps_history: list = []  # (timestamp, pps) for throughput graph
 
         # Filter validity flag — set False when BPF causes an error
         self.filter_error: str | None = None
@@ -259,7 +288,6 @@ class CaptureEngine:
                 self.error_callback(err.message)
             return False
 
-
     def export_txt(self, path: str, stored_packets: list) -> bool:
         """Save a plain-text summary of displayed packets."""
         try:
@@ -273,8 +301,13 @@ class CaptureEngine:
                     dport = pkt.get("dport", "")
                     src_str = f"{src}:{sport}" if sport else src
                     dst_str = f"{dst}:{dport}" if dport else dst
-                    info = (pkt.get("tls_info") or pkt.get("http_info") or
-                            pkt.get("behavior", "") or pkt.get("flags", "") or "")
+                    info = (
+                        pkt.get("tls_info")
+                        or pkt.get("http_info")
+                        or pkt.get("behavior", "")
+                        or pkt.get("flags", "")
+                        or ""
+                    )
                     f.write(
                         f"[{pkt.get('time', '')}] #{pkt.get('index', '')}  "
                         f"{pkt.get('protocol', '?'):10}  "
@@ -318,7 +351,9 @@ class CaptureEngine:
             except OSError as e:
                 err_str = str(e).lower()
                 if "operation not permitted" in err_str or "errno 1" in err_str:
-                    err = PrivilegeError("Permission denied. You must run NetPhantom as root (sudo) on Linux to capture packets.")
+                    err = PrivilegeError(
+                        "Permission denied. You must run NetPhantom as root (sudo) on Linux to capture packets."
+                    )
                 else:
                     err = CaptureEngineError(f"Network interface capture error: {e}")
                 if self.error_callback:
@@ -328,9 +363,15 @@ class CaptureEngine:
                 break
             except Exception as e:
                 err_str = str(e).lower()
-                if bpf and ("filter" in err_str or "bpf" in err_str or
-                            "syntax" in err_str or "invalid" in err_str):
-                    val_err = ValidationError(f"BPF filter '{bpf}' is invalid on this interface: {e}")
+                if bpf and (
+                    "filter" in err_str
+                    or "bpf" in err_str
+                    or "syntax" in err_str
+                    or "invalid" in err_str
+                ):
+                    val_err = ValidationError(
+                        f"BPF filter '{bpf}' is invalid on this interface: {e}"
+                    )
                     self.filter_error = f"{val_err.message}. Capturing without filter."
                     if self.error_callback:
                         self.error_callback(self.filter_error)
@@ -371,6 +412,7 @@ def resolve_scapy_interface(iface_input):
 
     try:
         from scapy.all import conf, IFACES
+
         # 1. Exact match in IFACES (by devname, name, or description)
         for key, iface_obj in IFACES.items():
             if str(key) == str(iface_input):
@@ -407,6 +449,7 @@ def list_interfaces() -> list[str]:
     """Return a list of available network interface names sorted by physical activity priority."""
     try:
         from scapy.all import get_working_ifaces, conf, get_if_list
+
         raw_ifaces = get_working_ifaces()
 
         def priority_score(iface_obj):
@@ -416,15 +459,15 @@ def list_interfaces() -> list[str]:
 
             # Prioritize Wi-Fi and Ethernet with valid IP addresses
             if "wi-fi" in name or "wifi" in name or "wlan" in name or "wlp" in name:
-                return (100 + has_ip * 50)
+                return 100 + has_ip * 50
             if "ethernet" in name or "eth" in name or "enp" in name:
-                return (90 + has_ip * 50)
+                return 90 + has_ip * 50
             if "local area connection" in name and "*" not in name:
-                return (70 + has_ip * 30)
+                return 70 + has_ip * 30
             if "loopback" in name or name == "lo":
                 return 1
             # Virtual / Direct adapters like Local Area Connection* 10
-            return (10 + has_ip * 20)
+            return 10 + has_ip * 20
 
         sorted_objs = sorted(raw_ifaces, key=priority_score, reverse=True)
         names = [o.name for o in sorted_objs if getattr(o, "name", None)]

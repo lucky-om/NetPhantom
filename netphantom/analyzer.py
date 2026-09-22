@@ -15,16 +15,25 @@ from scapy.all import IP, IPv6, TCP, UDP, ICMP, ARP, DNS, DNSQR, DNSRR, Raw, Eth
 # ─────────────────────────────────────────────
 try:
     from scapy.all import load_layer
+
     load_layer("tls")
-    from scapy.layers.tls.all import TLS, TLSClientHello, TLSServerHello, TLS_Ext_ServerName
+    from scapy.layers.tls.all import (
+        TLS,
+        TLSClientHello,
+        TLSServerHello,
+        TLS_Ext_ServerName,
+    )
+
     HAS_TLS = True
 except Exception:
     HAS_TLS = False
 
 try:
     from scapy.all import load_layer
+
     load_layer("http")
     from scapy.layers.http import HTTPRequest, HTTPResponse
+
     HAS_HTTP = True
 except Exception:
     HAS_HTTP = False
@@ -35,29 +44,31 @@ except Exception:
 # ─────────────────────────────────────────────
 # Returns a color category string used by the GUI to set row bg color
 PACKET_COLOR_RULES = {
-    "tcp_syn":     "#1a2744",   # TCP SYN — dark blue highlight
-    "tcp_synack":  "#1a3340",   # TCP SYN-ACK
-    "tcp_fin":     "#2a1a1a",   # TCP FIN/RST — dark red tint
-    "tcp_rst":     "#3a1a1a",   # TCP RST — stronger red
-    "tcp":         "#0f1e2e",   # Regular TCP — subtle blue
-    "udp":         "#0f2318",   # UDP — subtle green
-    "dns":         "#1a2a1f",   # DNS — teal tint
-    "http":        "#1f2a15",   # HTTP — warm green
-    "https":       "#151a2f",   # HTTPS/TLS — deep blue
-    "tls":         "#151a2f",   # TLS
-    "icmp":        "#2a2510",   # ICMP — amber tint
-    "arp":         "#1a1530",   # ARP — purple tint
-    "quic":        "#101a2f",   # QUIC — cyan tint
-    "ipv6":        "#15151f",   # IPv6
-    "alert":       "#3a0f0f",   # Threat/alert — red highlight
-    "other":       "#111827",   # Default
+    "tcp_syn": "#1a2744",  # TCP SYN — dark blue highlight
+    "tcp_synack": "#1a3340",  # TCP SYN-ACK
+    "tcp_fin": "#2a1a1a",  # TCP FIN/RST — dark red tint
+    "tcp_rst": "#3a1a1a",  # TCP RST — stronger red
+    "tcp": "#0f1e2e",  # Regular TCP — subtle blue
+    "udp": "#0f2318",  # UDP — subtle green
+    "dns": "#1a2a1f",  # DNS — teal tint
+    "http": "#1f2a15",  # HTTP — warm green
+    "https": "#151a2f",  # HTTPS/TLS — deep blue
+    "tls": "#151a2f",  # TLS
+    "icmp": "#2a2510",  # ICMP — amber tint
+    "arp": "#1a1530",  # ARP — purple tint
+    "quic": "#101a2f",  # QUIC — cyan tint
+    "ipv6": "#15151f",  # IPv6
+    "alert": "#3a0f0f",  # Threat/alert — red highlight
+    "other": "#111827",  # Default
 }
 
 
 def get_packet_color_rule(info: dict) -> str:
     """Determine the color rule for a packet based on protocol and flags."""
     proto = info.get("protocol", "").upper()
-    flags = info.get("flags") or ""  # Guard against None — TCP flags default to empty string
+    flags = (
+        info.get("flags") or ""
+    )  # Guard against None — TCP flags default to empty string
 
     if info.get("_threat"):
         return "alert"
@@ -110,9 +121,12 @@ def categorize_ip(ip_str: str) -> str:
         return "Broadcast"
     try:
         ip = ipaddress.ip_address(ip_str)
-        if ip.is_multicast:   return "Multicast"
-        if ip.is_loopback:    return "Loopback"
-        if ip.is_private:     return "Local"
+        if ip.is_multicast:
+            return "Multicast"
+        if ip.is_loopback:
+            return "Loopback"
+        if ip.is_private:
+            return "Local"
         return "External"
     except ValueError:
         return "Unknown"
@@ -137,7 +151,7 @@ def build_protocol_tree(pkt, timestamp: str = None) -> list:
     Build a Wireshark-style protocol dissection tree from a Scapy packet.
     Returns a list of dicts:
       [{"layer": "Ethernet II", "fields": [("Src MAC", "aa:bb:..."), ...]}, ...]
-    
+
     Args:
         pkt: Scapy packet object
         timestamp: Optional capture timestamp string (HH:MM:SS.mmm). When omitted,
@@ -176,11 +190,19 @@ def build_protocol_tree(pkt, timestamp: str = None) -> list:
             ("Fragment Offset", str(ip_layer.frag)),
             ("TTL", str(ip_layer.ttl)),
             ("Protocol", str(ip_layer.proto)),
-            ("Header Checksum", f"0x{ip_layer.chksum:04x}" if ip_layer.chksum else "N/A"),
+            (
+                "Header Checksum",
+                f"0x{ip_layer.chksum:04x}" if ip_layer.chksum else "N/A",
+            ),
             ("Source Address", ip_layer.src),
             ("Destination Address", ip_layer.dst),
         ]
-        tree.append({"layer": f"Internet Protocol Version 4, Src: {ip_layer.src}, Dst: {ip_layer.dst}", "fields": ip_fields})
+        tree.append(
+            {
+                "layer": f"Internet Protocol Version 4, Src: {ip_layer.src}, Dst: {ip_layer.dst}",
+                "fields": ip_fields,
+            }
+        )
 
     # IPv6
     elif pkt.haslayer(IPv6):
@@ -195,7 +217,12 @@ def build_protocol_tree(pkt, timestamp: str = None) -> list:
             ("Source Address", ip6.src),
             ("Destination Address", ip6.dst),
         ]
-        tree.append({"layer": f"Internet Protocol Version 6, Src: {ip6.src}, Dst: {ip6.dst}", "fields": ip6_fields})
+        tree.append(
+            {
+                "layer": f"Internet Protocol Version 6, Src: {ip6.src}, Dst: {ip6.dst}",
+                "fields": ip6_fields,
+            }
+        )
 
     # ARP
     if pkt.haslayer(ARP):
@@ -210,7 +237,9 @@ def build_protocol_tree(pkt, timestamp: str = None) -> list:
             ("Target MAC", arp.hwdst),
             ("Target IP", arp.pdst),
         ]
-        tree.append({"layer": f"Address Resolution Protocol ({op_str})", "fields": arp_fields})
+        tree.append(
+            {"layer": f"Address Resolution Protocol ({op_str})", "fields": arp_fields}
+        )
 
     # TCP
     if pkt.haslayer(TCP):
@@ -231,7 +260,12 @@ def build_protocol_tree(pkt, timestamp: str = None) -> list:
         if tcp.options:
             for opt_name, opt_val in tcp.options:
                 tcp_fields.append((f"Option: {opt_name}", str(opt_val)))
-        tree.append({"layer": f"Transmission Control Protocol, Src Port: {tcp.sport}, Dst Port: {tcp.dport}, [{flags_str}]", "fields": tcp_fields})
+        tree.append(
+            {
+                "layer": f"Transmission Control Protocol, Src Port: {tcp.sport}, Dst Port: {tcp.dport}, [{flags_str}]",
+                "fields": tcp_fields,
+            }
+        )
 
     # UDP
     elif pkt.haslayer(UDP):
@@ -242,22 +276,37 @@ def build_protocol_tree(pkt, timestamp: str = None) -> list:
             ("Length", str(udp.len)),
             ("Checksum", f"0x{udp.chksum:04x}" if udp.chksum else "N/A"),
         ]
-        tree.append({"layer": f"User Datagram Protocol, Src Port: {udp.sport}, Dst Port: {udp.dport}", "fields": udp_fields})
+        tree.append(
+            {
+                "layer": f"User Datagram Protocol, Src Port: {udp.sport}, Dst Port: {udp.dport}",
+                "fields": udp_fields,
+            }
+        )
 
     # ICMP
     elif pkt.haslayer(ICMP):
         icmp = pkt[ICMP]
-        type_names = {0: "Echo Reply", 3: "Destination Unreachable", 8: "Echo Request",
-                      11: "Time Exceeded", 5: "Redirect"}
+        type_names = {
+            0: "Echo Reply",
+            3: "Destination Unreachable",
+            8: "Echo Request",
+            11: "Time Exceeded",
+            5: "Redirect",
+        }
         type_str = type_names.get(icmp.type, f"Type {icmp.type}")
         icmp_fields = [
             ("Type", f"{icmp.type} ({type_str})"),
             ("Code", str(icmp.code)),
             ("Checksum", f"0x{icmp.chksum:04x}" if icmp.chksum else "N/A"),
-            ("Identifier", str(icmp.id) if hasattr(icmp, 'id') else "N/A"),
-            ("Sequence", str(icmp.seq) if hasattr(icmp, 'seq') else "N/A"),
+            ("Identifier", str(icmp.id) if hasattr(icmp, "id") else "N/A"),
+            ("Sequence", str(icmp.seq) if hasattr(icmp, "seq") else "N/A"),
         ]
-        tree.append({"layer": f"Internet Control Message Protocol ({type_str})", "fields": icmp_fields})
+        tree.append(
+            {
+                "layer": f"Internet Control Message Protocol ({type_str})",
+                "fields": icmp_fields,
+            }
+        )
 
     # DNS
     if pkt.haslayer(DNS):
@@ -275,8 +324,16 @@ def build_protocol_tree(pkt, timestamp: str = None) -> list:
         if dns.qd and pkt.haslayer(DNSQR):
             try:
                 qname = dns.qd.qname.decode("utf-8", "ignore")
-                qtype_map = {1: "A", 2: "NS", 5: "CNAME", 15: "MX", 16: "TXT",
-                             28: "AAAA", 33: "SRV", 255: "ANY"}
+                qtype_map = {
+                    1: "A",
+                    2: "NS",
+                    5: "CNAME",
+                    15: "MX",
+                    16: "TXT",
+                    28: "AAAA",
+                    33: "SRV",
+                    255: "ANY",
+                }
                 qtype = qtype_map.get(dns.qd.qtype, str(dns.qd.qtype))
                 dns_fields.append(("Query Name", qname))
                 dns_fields.append(("Query Type", qtype))
@@ -289,13 +346,21 @@ def build_protocol_tree(pkt, timestamp: str = None) -> list:
                 rr = dns.an
                 i = 0
                 while rr and i < 5:
-                    if not hasattr(rr, 'rrname'):
+                    if not hasattr(rr, "rrname"):
                         break
-                    rname = rr.rrname.decode("utf-8", "ignore") if hasattr(rr.rrname, 'decode') else str(rr.rrname)
-                    rdata = str(rr.rdata.decode("utf-8", "ignore") if hasattr(rr.rdata, 'decode') else rr.rdata)
+                    rname = (
+                        rr.rrname.decode("utf-8", "ignore")
+                        if hasattr(rr.rrname, "decode")
+                        else str(rr.rrname)
+                    )
+                    rdata = str(
+                        rr.rdata.decode("utf-8", "ignore")
+                        if hasattr(rr.rdata, "decode")
+                        else rr.rdata
+                    )
                     dns_fields.append((f"Answer {i+1}", f"{rname} → {rdata}"))
-                    next_rr = getattr(rr, 'payload', None)
-                    rr = next_rr if (next_rr and hasattr(next_rr, 'rrname')) else None
+                    next_rr = getattr(rr, "payload", None)
+                    rr = next_rr if (next_rr and hasattr(next_rr, "rrname")) else None
                     i += 1
             except Exception:
                 pass
@@ -305,22 +370,48 @@ def build_protocol_tree(pkt, timestamp: str = None) -> list:
     if HAS_HTTP and pkt.haslayer(HTTPRequest):
         req = pkt[HTTPRequest]
         http_fields = []
-        for field_name in ["Method", "Host", "Path", "Http_Version", "User_Agent", "Accept", "Content_Type"]:
+        for field_name in [
+            "Method",
+            "Host",
+            "Path",
+            "Http_Version",
+            "User_Agent",
+            "Accept",
+            "Content_Type",
+        ]:
             val = getattr(req, field_name, None)
             if val:
-                val_str = val.decode("utf-8", "ignore") if isinstance(val, bytes) else str(val)
+                val_str = (
+                    val.decode("utf-8", "ignore")
+                    if isinstance(val, bytes)
+                    else str(val)
+                )
                 http_fields.append((field_name.replace("_", " "), val_str))
-        tree.append({"layer": "Hypertext Transfer Protocol (Request)", "fields": http_fields})
+        tree.append(
+            {"layer": "Hypertext Transfer Protocol (Request)", "fields": http_fields}
+        )
 
     elif HAS_HTTP and pkt.haslayer(HTTPResponse):
         resp = pkt[HTTPResponse]
         http_fields = []
-        for field_name in ["Http_Version", "Status_Code", "Reason_Phrase", "Content_Type", "Server"]:
+        for field_name in [
+            "Http_Version",
+            "Status_Code",
+            "Reason_Phrase",
+            "Content_Type",
+            "Server",
+        ]:
             val = getattr(resp, field_name, None)
             if val:
-                val_str = val.decode("utf-8", "ignore") if isinstance(val, bytes) else str(val)
+                val_str = (
+                    val.decode("utf-8", "ignore")
+                    if isinstance(val, bytes)
+                    else str(val)
+                )
                 http_fields.append((field_name.replace("_", " "), val_str))
-        tree.append({"layer": "Hypertext Transfer Protocol (Response)", "fields": http_fields})
+        tree.append(
+            {"layer": "Hypertext Transfer Protocol (Response)", "fields": http_fields}
+        )
 
     # TLS
     if HAS_TLS and pkt.haslayer(TLS):
@@ -329,18 +420,35 @@ def build_protocol_tree(pkt, timestamp: str = None) -> list:
             ch = pkt[TLSClientHello]
             tls_fields.append(("Handshake Type", "Client Hello"))
             if hasattr(ch, "version"):
-                ver_map = {0x0301: "TLS 1.0", 0x0302: "TLS 1.1", 0x0303: "TLS 1.2", 0x0304: "TLS 1.3"}
-                tls_fields.append(("Version", ver_map.get(ch.version, f"0x{ch.version:04x}")))
+                ver_map = {
+                    0x0301: "TLS 1.0",
+                    0x0302: "TLS 1.1",
+                    0x0303: "TLS 1.2",
+                    0x0304: "TLS 1.3",
+                }
+                tls_fields.append(
+                    ("Version", ver_map.get(ch.version, f"0x{ch.version:04x}"))
+                )
             # SNI
             if ch.ext:
                 for ext in ch.ext:
                     if isinstance(ext, TLS_Ext_ServerName) and ext.servernames:
                         sni = ext.servernames[0].servername.decode("utf-8", "ignore")
                         tls_fields.append(("Server Name (SNI)", sni))
-            tree.append({"layer": "Transport Layer Security (Client Hello)", "fields": tls_fields})
+            tree.append(
+                {
+                    "layer": "Transport Layer Security (Client Hello)",
+                    "fields": tls_fields,
+                }
+            )
         elif pkt.haslayer(TLSServerHello):
             tls_fields.append(("Handshake Type", "Server Hello"))
-            tree.append({"layer": "Transport Layer Security (Server Hello)", "fields": tls_fields})
+            tree.append(
+                {
+                    "layer": "Transport Layer Security (Server Hello)",
+                    "fields": tls_fields,
+                }
+            )
         else:
             tls_fields.append(("Record", "Encrypted Application Data"))
             tree.append({"layer": "Transport Layer Security", "fields": tls_fields})
@@ -364,14 +472,14 @@ def format_hex_dump(pkt) -> str:
     raw_bytes = bytes(pkt)
     lines = []
     for offset in range(0, len(raw_bytes), 16):
-        chunk = raw_bytes[offset:offset + 16]
+        chunk = raw_bytes[offset : offset + 16]
         hex_part = " ".join(f"{b:02x}" for b in chunk)
         # Add spacing between groups of 8 bytes
         first_group_len = min(8, len(chunk))
         # Position after first group's hex chars: each byte = 2 chars + 1 space, minus trailing space
         gap_pos = first_group_len * 3 - 1
         if len(chunk) > 8:
-            hex_part = hex_part[:gap_pos] + "  " + hex_part[gap_pos + 1:]
+            hex_part = hex_part[:gap_pos] + "  " + hex_part[gap_pos + 1 :]
         ascii_part = "".join(chr(b) if 32 <= b <= 126 else "." for b in chunk)
         lines.append(f"{offset:04x}   {hex_part:<50s}  {ascii_part}")
     return "\n".join(lines)
@@ -384,31 +492,31 @@ class PacketAnalyzer:
     """Parses raw Scapy packets into structured dicts with DPI and stream tracking."""
 
     # Threat detection thresholds (raised to reduce false positives)
-    PORT_SCAN_THRESHOLD   = 50    # unique dst ports from one IP
-    DOS_PPS_THRESHOLD     = 500   # packets/sec from one IP
-    ICMP_FLOOD_THRESHOLD  = 200   # ICMP packets/sec from one IP
-    DNS_FLOOD_THRESHOLD   = 100   # DNS queries/sec from one IP
-    SYN_FLOOD_THRESHOLD   = 200   # SYN packets/sec from one IP
+    PORT_SCAN_THRESHOLD = 50  # unique dst ports from one IP
+    DOS_PPS_THRESHOLD = 500  # packets/sec from one IP
+    ICMP_FLOOD_THRESHOLD = 200  # ICMP packets/sec from one IP
+    DNS_FLOOD_THRESHOLD = 100  # DNS queries/sec from one IP
+    SYN_FLOOD_THRESHOLD = 200  # SYN packets/sec from one IP
 
     def __init__(self):
-        self.packet_count   = 0
-        self.total_bytes    = 0
+        self.packet_count = 0
+        self.total_bytes = 0
         self.protocol_stats = defaultdict(int)
-        self.ip_stats       = defaultdict(int)
+        self.ip_stats = defaultdict(int)
         # Stream tracking: key → {packets, bytes, proto, last_seen, first_seen}
         self.streams: dict[str, dict] = {}
         # Endpoint tracking: ip → {tx_pkts, rx_pkts, tx_bytes, rx_bytes}
         self.endpoints: dict[str, dict] = {}
         # Threat detection state
         self._threat_state = {
-            "port_targets": defaultdict(set),        # src_ip → set of dst_ports
-            "pps_counter": defaultdict(int),          # src_ip → packet count this window
-            "icmp_counter": defaultdict(int),          # src_ip → icmp count this window
-            "dns_counter": defaultdict(int),           # src_ip → dns count this window
-            "syn_counter": defaultdict(int),           # src_ip → syn count this window
-            "ssh_counter": defaultdict(int),           # src_ip → ssh conn count this window
-            "rdp_counter": defaultdict(int),           # src_ip → rdp conn count this window
-            "arp_table": {},                           # ip → mac (for ARP spoof detection)
+            "port_targets": defaultdict(set),  # src_ip → set of dst_ports
+            "pps_counter": defaultdict(int),  # src_ip → packet count this window
+            "icmp_counter": defaultdict(int),  # src_ip → icmp count this window
+            "dns_counter": defaultdict(int),  # src_ip → dns count this window
+            "syn_counter": defaultdict(int),  # src_ip → syn count this window
+            "ssh_counter": defaultdict(int),  # src_ip → ssh conn count this window
+            "rdp_counter": defaultdict(int),  # src_ip → rdp conn count this window
+            "arp_table": {},  # ip → mac (for ARP spoof detection)
             "window_start": time.time(),
         }
         self.alerts: list[dict] = []
@@ -417,31 +525,31 @@ class PacketAnalyzer:
         self.packet_count += 1
         self.total_bytes += len(pkt)
         now = time.time()
-        ts  = datetime.now().strftime("%H:%M:%S.%f")[:-3]
+        ts = datetime.now().strftime("%H:%M:%S.%f")[:-3]
 
         info = {
-            "index":        self.packet_count,
-            "time":         ts,
-            "timestamp":    now,
-            "src":          "N/A",
-            "dst":          "N/A",
-            "protocol":     "OTHER",
-            "length":       len(pkt),
-            "sport":        None,
-            "dport":        None,
-            "flags":        "",          # Default to empty string to prevent 'in' TypeError on non-TCP packets
-            "ttl":          None,
-            "payload_ascii":"",
-            "payload_hex":  "",
-            "summary":      pkt.summary(),
-            "raw_pkt":      pkt,
-            "classification":"Unknown",
+            "index": self.packet_count,
+            "time": ts,
+            "timestamp": now,
+            "src": "N/A",
+            "dst": "N/A",
+            "protocol": "OTHER",
+            "length": len(pkt),
+            "sport": None,
+            "dport": None,
+            "flags": "",  # Default to empty string to prevent 'in' TypeError on non-TCP packets
+            "ttl": None,
+            "payload_ascii": "",
+            "payload_hex": "",
+            "summary": pkt.summary(),
+            "raw_pkt": pkt,
+            "classification": "Unknown",
             "is_encrypted": False,
-            "tls_info":     None,
-            "http_info":    None,
-            "behavior":     "",
-            "_threat":      None,
-            "color_rule":   "other",
+            "tls_info": None,
+            "http_info": None,
+            "behavior": "",
+            "_threat": None,
+            "color_rule": "other",
         }
 
         # ── L2 Ethernet ────────────────────────
@@ -457,8 +565,8 @@ class PacketAnalyzer:
             self.ip_stats[info["src"]] += 1
 
         elif pkt.haslayer(IPv6):
-            info["src"]      = pkt[IPv6].src
-            info["dst"]      = pkt[IPv6].dst
+            info["src"] = pkt[IPv6].src
+            info["dst"] = pkt[IPv6].dst
             info["protocol"] = "IPv6"
 
         # ── Boundary Classification ─────────────
@@ -473,21 +581,21 @@ class PacketAnalyzer:
 
         # ── L3 ARP ─────────────────────────────
         if pkt.haslayer(ARP):
-            info["src"]      = pkt[ARP].psrc
-            info["dst"]      = pkt[ARP].pdst
+            info["src"] = pkt[ARP].psrc
+            info["dst"] = pkt[ARP].pdst
             info["protocol"] = "ARP"
 
         # ── L4 Transport ───────────────────────
         if pkt.haslayer(TCP):
             info["protocol"] = "TCP"
-            info["sport"]    = pkt[TCP].sport
-            info["dport"]    = pkt[TCP].dport
-            info["flags"]    = str(pkt[TCP].flags)
+            info["sport"] = pkt[TCP].sport
+            info["dport"] = pkt[TCP].dport
+            info["flags"] = str(pkt[TCP].flags)
 
         elif pkt.haslayer(UDP):
             info["protocol"] = "UDP"
-            info["sport"]    = pkt[UDP].sport
-            info["dport"]    = pkt[UDP].dport
+            info["sport"] = pkt[UDP].sport
+            info["dport"] = pkt[UDP].dport
 
         elif pkt.haslayer(ICMP):
             info["protocol"] = "ICMP"
@@ -503,42 +611,65 @@ class PacketAnalyzer:
             except Exception:
                 pass
 
-        elif info["protocol"] == "UDP" and (info["sport"] == 443 or info["dport"] == 443):
+        elif info["protocol"] == "UDP" and (
+            info["sport"] == 443 or info["dport"] == 443
+        ):
             app_proto = "QUIC"
             info["is_encrypted"] = True
 
         elif HAS_HTTP and (pkt.haslayer(HTTPRequest) or pkt.haslayer(HTTPResponse)):
             app_proto = "HTTP"
             if pkt.haslayer(HTTPRequest):
-                method = pkt[HTTPRequest].Method.decode("utf-8", "ignore") if pkt[HTTPRequest].Method else ""
-                host   = pkt[HTTPRequest].Host.decode("utf-8", "ignore")   if pkt[HTTPRequest].Host   else ""
-                path   = pkt[HTTPRequest].Path.decode("utf-8", "ignore")   if pkt[HTTPRequest].Path   else ""
+                method = (
+                    pkt[HTTPRequest].Method.decode("utf-8", "ignore")
+                    if pkt[HTTPRequest].Method
+                    else ""
+                )
+                host = (
+                    pkt[HTTPRequest].Host.decode("utf-8", "ignore")
+                    if pkt[HTTPRequest].Host
+                    else ""
+                )
+                path = (
+                    pkt[HTTPRequest].Path.decode("utf-8", "ignore")
+                    if pkt[HTTPRequest].Path
+                    else ""
+                )
                 info["http_info"] = f"{method} {host}{path}"
 
-        elif info["protocol"] == "TCP" and (info["sport"] in (80, 8080) or info["dport"] in (80, 8080)):
+        elif info["protocol"] == "TCP" and (
+            info["sport"] in (80, 8080) or info["dport"] in (80, 8080)
+        ):
             app_proto = "HTTP"
 
         elif HAS_TLS and pkt.haslayer(TLS):
-            app_proto            = "TLS"
+            app_proto = "TLS"
             info["is_encrypted"] = True
             if pkt.haslayer(TLSClientHello):
                 info["protocol"] = "TLS ClientHello"
-                sni = "Unknown Domain"; version = "TLS"
-                ch  = pkt[TLSClientHello]
+                sni = "Unknown Domain"
+                version = "TLS"
+                ch = pkt[TLSClientHello]
                 if hasattr(ch, "version"):
-                    if ch.version == 0x0303: version = "TLS 1.2"
-                    elif ch.version == 0x0304: version = "TLS 1.3"
+                    if ch.version == 0x0303:
+                        version = "TLS 1.2"
+                    elif ch.version == 0x0304:
+                        version = "TLS 1.3"
                 if ch.ext:
                     for ext in ch.ext:
                         if isinstance(ext, TLS_Ext_ServerName) and ext.servernames:
-                            sni = ext.servernames[0].servername.decode("utf-8", "ignore")
+                            sni = ext.servernames[0].servername.decode(
+                                "utf-8", "ignore"
+                            )
                 info["tls_info"] = f"SNI: {sni} | {version}"
             elif pkt.haslayer(TLSServerHello):
                 info["protocol"] = "TLS ServerHello"
                 info["tls_info"] = "Handshake Reply"
 
-        elif info["protocol"] == "TCP" and (info["sport"] == 443 or info["dport"] == 443):
-            app_proto            = "HTTPS"
+        elif info["protocol"] == "TCP" and (
+            info["sport"] == 443 or info["dport"] == 443
+        ):
+            app_proto = "HTTPS"
             info["is_encrypted"] = True
 
         if app_proto and info["protocol"] not in ("TLS ClientHello", "TLS ServerHello"):
@@ -547,8 +678,10 @@ class PacketAnalyzer:
         # ── Payload ─────────────────────────────
         if pkt.haslayer(Raw):
             raw = pkt[Raw].load
-            info["payload_ascii"] = "".join(chr(b) if 32 <= b <= 126 else "." for b in raw)[:300]
-            info["payload_hex"]   = " ".join(f"{b:02x}" for b in raw)[:500]
+            info["payload_ascii"] = "".join(
+                chr(b) if 32 <= b <= 126 else "." for b in raw
+            )[:300]
+            info["payload_hex"] = " ".join(f"{b:02x}" for b in raw)[:500]
 
         # ── Behavior Tagging ────────────────────
         info["behavior"] = self._determine_behavior(info)
@@ -564,16 +697,16 @@ class PacketAnalyzer:
             key = make_stream_key(info)
             if key not in self.streams:
                 self.streams[key] = {
-                    "proto":      info["protocol"].split()[0],
-                    "packets":    0,
-                    "bytes":      0,
-                    "key":        key,
+                    "proto": info["protocol"].split()[0],
+                    "packets": 0,
+                    "bytes": 0,
+                    "key": key,
                     "first_seen": ts,
                 }
             s = self.streams[key]
-            s["packets"]   += 1
-            s["bytes"]     += info["length"]
-            s["last_seen"]  = ts
+            s["packets"] += 1
+            s["bytes"] += info["length"]
+            s["last_seen"] = ts
 
         # ── Threat Detection ────────────────────
         threat = self._detect_threats(info, now)
@@ -582,8 +715,8 @@ class PacketAnalyzer:
             alert_entry = {
                 "time": ts,
                 "type": threat,
-                "src":  info["src"],
-                "dst":  info["dst"],
+                "src": info["src"],
+                "dst": info["dst"],
                 "proto": info["protocol"],
                 "pkt_index": info["index"],
             }
@@ -603,13 +736,23 @@ class PacketAnalyzer:
 
         if src != "N/A":
             if src not in self.endpoints:
-                self.endpoints[src] = {"tx_pkts": 0, "rx_pkts": 0, "tx_bytes": 0, "rx_bytes": 0}
+                self.endpoints[src] = {
+                    "tx_pkts": 0,
+                    "rx_pkts": 0,
+                    "tx_bytes": 0,
+                    "rx_bytes": 0,
+                }
             self.endpoints[src]["tx_pkts"] += 1
             self.endpoints[src]["tx_bytes"] += length
 
         if dst != "N/A":
             if dst not in self.endpoints:
-                self.endpoints[dst] = {"tx_pkts": 0, "rx_pkts": 0, "tx_bytes": 0, "rx_bytes": 0}
+                self.endpoints[dst] = {
+                    "tx_pkts": 0,
+                    "rx_pkts": 0,
+                    "tx_bytes": 0,
+                    "rx_bytes": 0,
+                }
             self.endpoints[dst]["rx_pkts"] += 1
             self.endpoints[dst]["rx_bytes"] += length
 
@@ -640,7 +783,9 @@ class PacketAnalyzer:
         if dport and info["protocol"] in ("TCP", "UDP"):
             state["port_targets"][src].add(dport)
             if len(state["port_targets"][src]) > self.PORT_SCAN_THRESHOLD:
-                return f"⚠ PORT SCAN from {src} ({len(state['port_targets'][src])} ports)"
+                return (
+                    f"⚠ PORT SCAN from {src} ({len(state['port_targets'][src])} ports)"
+                )
 
         # SYN flood detection
         flags = info.get("flags") or ""  # Guard against None flags on non-TCP packets
@@ -676,13 +821,25 @@ class PacketAnalyzer:
                 state["arp_table"][arp_ip] = arp_mac
 
         # SSH Brute Force Detection
-        if info["protocol"] == "TCP" and info.get("dport") == 22 and "S" in flags and "A" not in flags:
+        if (
+            info["protocol"] == "TCP"
+            and info.get("dport") == 22
+            and "S" in flags
+            and "A" not in flags
+        ):
             state["ssh_counter"][src] += 1
-            if state["ssh_counter"][src] > 20:  # more than 20 SSH SYNs per second from same IP
+            if (
+                state["ssh_counter"][src] > 20
+            ):  # more than 20 SSH SYNs per second from same IP
                 return f"⚠ SSH BRUTE FORCE from {src} ({state['ssh_counter'][src]} attempts/sec)"
 
         # RDP Brute Force Detection
-        if info["protocol"] == "TCP" and info.get("dport") == 3389 and "S" in flags and "A" not in flags:
+        if (
+            info["protocol"] == "TCP"
+            and info.get("dport") == 3389
+            and "S" in flags
+            and "A" not in flags
+        ):
             state["rdp_counter"][src] += 1
             if state["rdp_counter"][src] > 20:
                 return f"⚠ RDP BRUTE FORCE from {src} ({state['rdp_counter'][src]} attempts/sec)"
@@ -694,31 +851,49 @@ class PacketAnalyzer:
                 return f"⚠ CLEARTEXT CREDENTIALS (HTTP Basic Auth) from {src} to {info.get('dst', 'N/A')}"
             # Detect form-based login credentials in POST bodies
             cred_patterns = [
-                "password=", "passwd=", "pwd=", "pass=",
-                "username=", "user=", "login=", "email=",
-                "txtusername=", "txtpassword=",
+                "password=",
+                "passwd=",
+                "pwd=",
+                "pass=",
+                "username=",
+                "user=",
+                "login=",
+                "email=",
+                "txtusername=",
+                "txtpassword=",
             ]
             has_credential_field = sum(1 for p in cred_patterns if p in payload) >= 2
-            if has_credential_field and ("post" in payload or "submit" in payload or "login" in payload):
+            if has_credential_field and (
+                "post" in payload or "submit" in payload or "login" in payload
+            ):
                 return f"⚠ CLEARTEXT CREDENTIALS (HTTP POST) from {src} to {info.get('dst', 'N/A')}"
-                     
+
         return None
 
     # ── Behavior Tagger ────────────────────────
     def _determine_behavior(self, info: dict) -> str:
-        proto  = info.get("protocol", "")
-        sport  = info.get("sport")
-        dport  = info.get("dport")
+        proto = info.get("protocol", "")
+        sport = info.get("sport")
+        dport = info.get("dport")
         payload = info.get("payload_ascii", "").lower()
 
         browser = ""
-        if "brave"   in payload: browser = " (Brave)"
-        elif "chrome" in payload: browser = " (Chrome)"
-        elif "firefox" in payload: browser = " (Firefox)"
-        elif "safari"  in payload: browser = " (Safari)"
-        elif "edge"    in payload: browser = " (Edge)"
+        if "brave" in payload:
+            browser = " (Brave)"
+        elif "chrome" in payload:
+            browser = " (Chrome)"
+        elif "firefox" in payload:
+            browser = " (Firefox)"
+        elif "safari" in payload:
+            browser = " (Safari)"
+        elif "edge" in payload:
+            browser = " (Edge)"
 
-        if any(x in proto for x in ("HTTP", "TLS", "QUIC")) or sport in (80, 443) or dport in (80, 443):
+        if (
+            any(x in proto for x in ("HTTP", "TLS", "QUIC"))
+            or sport in (80, 443)
+            or dport in (80, 443)
+        ):
             return f"Web Browsing{browser}"
         if proto == "DNS" or sport == 53 or dport == 53:
             return "DNS Resolution"
@@ -752,13 +927,17 @@ class PacketAnalyzer:
 
     def get_stats(self) -> dict:
         return {
-            "total":      self.packet_count,
+            "total": self.packet_count,
             "total_bytes": self.total_bytes,
-            "protocols":  dict(self.protocol_stats),
-            "top_ips":    sorted(self.ip_stats.items(), key=lambda x: x[1], reverse=True)[:10],
-            "streams":    sorted(self.streams.values(), key=lambda s: s["bytes"], reverse=True)[:50],
-            "endpoints":  self._get_top_endpoints(20),
-            "alerts":     len(self.alerts),
+            "protocols": dict(self.protocol_stats),
+            "top_ips": sorted(self.ip_stats.items(), key=lambda x: x[1], reverse=True)[
+                :10
+            ],
+            "streams": sorted(
+                self.streams.values(), key=lambda s: s["bytes"], reverse=True
+            )[:50],
+            "endpoints": self._get_top_endpoints(20),
+            "alerts": len(self.alerts),
         }
 
     def _get_top_endpoints(self, n: int = 20) -> list:
@@ -766,14 +945,16 @@ class PacketAnalyzer:
         result = []
         for ip, data in self.endpoints.items():
             total = data["tx_bytes"] + data["rx_bytes"]
-            result.append({
-                "ip": ip,
-                "tx_pkts": data["tx_pkts"],
-                "rx_pkts": data["rx_pkts"],
-                "tx_bytes": data["tx_bytes"],
-                "rx_bytes": data["rx_bytes"],
-                "total_bytes": total,
-            })
+            result.append(
+                {
+                    "ip": ip,
+                    "tx_pkts": data["tx_pkts"],
+                    "rx_pkts": data["rx_pkts"],
+                    "tx_bytes": data["tx_bytes"],
+                    "rx_bytes": data["rx_bytes"],
+                    "total_bytes": total,
+                }
+            )
         result.sort(key=lambda x: x["total_bytes"], reverse=True)
         return result[:n]
 
@@ -817,8 +998,10 @@ def format_packet_details(pkt_info: dict) -> str:
         "",
         f"  BEHAVIOR   : {pkt_info.get('behavior', 'Unknown')}",
         f"  PROTOCOL   : {pkt_info['protocol']}",
-        f"  SRC        : {pkt_info['src']}" + (f":{pkt_info['sport']}" if pkt_info.get("sport") else ""),
-        f"  DST        : {pkt_info['dst']}" + (f":{pkt_info['dport']}" if pkt_info.get("dport") else ""),
+        f"  SRC        : {pkt_info['src']}"
+        + (f":{pkt_info['sport']}" if pkt_info.get("sport") else ""),
+        f"  DST        : {pkt_info['dst']}"
+        + (f":{pkt_info['dport']}" if pkt_info.get("dport") else ""),
         f"  LENGTH     : {pkt_info['length']} bytes",
         f"  BOUNDARY   : {pkt_info['classification']}",
         f"  ENCRYPTED  : {'YES ✓' if pkt_info['is_encrypted'] else 'NO'}",
