@@ -131,7 +131,7 @@ def show_splash():
     _logo_path = _find_logo_path()
     if _logo_path:
         try:
-            from PIL import Image, ImageTk
+            from PIL import Image, ImageTk  # type: ignore
 
             _icon_img = Image.open(_logo_path).resize((64, 64), Image.LANCZOS)
             _icon_photo = ImageTk.PhotoImage(_icon_img)
@@ -247,7 +247,7 @@ def show_splash():
     _use_image_logo = False
     if _logo_path:
         try:
-            from PIL import Image, ImageTk
+            from PIL import Image, ImageTk  # type: ignore
 
             _pil_img = Image.open(_logo_path).resize((80, 80), Image.LANCZOS)
             _logo_img_ref[0] = ImageTk.PhotoImage(_pil_img)
@@ -2312,14 +2312,14 @@ class PacketSnifferGUI:
             self._filter_status_lbl.config(fg=TEXT_DIM)
             return
         try:
-            from scapy.arch import compile_filter
+            from scapy.arch import compile_filter  # type: ignore
 
             compile_filter(bpf)
             self._filter_status_lbl.config(fg=ACCENT_GREEN)
             self._set_status(f"BPF filter '{bpf}' is valid ✓", "idle")
         except Exception:
             try:
-                from scapy.all import sniff as _sniff
+                from scapy.all import sniff as _sniff  # type: ignore
 
                 _sniff(filter=bpf, count=0, timeout=0.05, store=False)
                 self._filter_status_lbl.config(fg=ACCENT_GREEN)
@@ -4243,7 +4243,7 @@ def run_gui(open_file: str = None, app_ref: list = None):
     _logo_path = _find_logo_path()
     if _logo_path:
         try:
-            from PIL import Image, ImageTk
+            from PIL import Image, ImageTk  # type: ignore
 
             _icon_img = Image.open(_logo_path).resize((64, 64), Image.LANCZOS)
             _icon_photo = ImageTk.PhotoImage(_icon_img)
